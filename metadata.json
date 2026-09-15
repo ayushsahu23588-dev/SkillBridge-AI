@@ -1,0 +1,8 @@
+{
+  "name": "SkillBridge AI | Academia–Industry Collaboration Platform",
+  "description": "Connect skills, learning, internships, projects and career opportunities with SkillBridge AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
