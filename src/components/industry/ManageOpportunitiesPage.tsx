@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { IndustryOpportunity } from '../../types';
+import { PlacementDriveDetailsModal } from '../common/PlacementDriveDetailsModal';
 import {
   Briefcase,
   Search,
@@ -40,6 +41,7 @@ export const ManageOpportunitiesPage: React.FC = () => {
   const [viewingOpp, setViewingOpp] = useState<IndustryOpportunity | null>(null);
   const [editingOpp, setEditingOpp] = useState<IndustryOpportunity | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isDriveDetailsOpen, setIsDriveDetailsOpen] = useState(false);
 
   // Edit Form fields
   const [editTitle, setEditTitle] = useState('');
@@ -463,10 +465,17 @@ export const ManageOpportunitiesPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-100 dark:border-white/5">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-100 dark:border-white/5 flex-wrap">
+              <button
+                onClick={() => setIsDriveDetailsOpen(true)}
+                className="px-4 py-2 rounded-xl bg-purple-100 dark:bg-purple-950/60 hover:bg-purple-200 text-purple-700 dark:text-purple-300 font-bold flex items-center gap-1.5 cursor-pointer text-xs"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Placement Drive Details</span>
+              </button>
               <button
                 onClick={() => setViewingOpp(null)}
-                className="px-4 py-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 font-bold cursor-pointer"
+                className="px-4 py-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 font-bold cursor-pointer text-xs"
               >
                 Close
               </button>
@@ -475,7 +484,7 @@ export const ManageOpportunitiesPage: React.FC = () => {
                   setViewingOpp(null);
                   navigate('/industry/candidates');
                 }}
-                className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold flex items-center gap-1.5 cursor-pointer text-xs"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Find Matching Candidates</span>
@@ -483,6 +492,32 @@ export const ManageOpportunitiesPage: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Shared Placement Drive Details Modal */}
+      {isDriveDetailsOpen && viewingOpp && (
+        <PlacementDriveDetailsModal
+          isOpen={true}
+          drive={{
+            id: viewingOpp.id,
+            companyId: viewingOpp.id || 'comp_opp_1',
+            companyName: viewingOpp.companyName || 'Recruiter Partner',
+            companyLogo: viewingOpp.companyLogo || 'https://images.unsplash.com/photo-1549923746-c502d488b3ea?w=100&auto=format&fit=crop&q=80',
+            title: viewingOpp.title,
+            department: viewingOpp.department,
+            location: viewingOpp.location,
+            type: viewingOpp.type === 'Internship' ? 'Internship' : 'Full-time',
+            workplaceType: (viewingOpp as any).workplaceType || 'On-site',
+            stipendOrSalary: viewingOpp.stipendOrSalary,
+            description: viewingOpp.description,
+            requiredSkills: viewingOpp.requiredSkills,
+            minGpa: 7.5,
+            applicantCount: viewingOpp.applicationsCount,
+            postedDate: viewingOpp.postedDate,
+            deadline: viewingOpp.deadline,
+          }}
+          onClose={() => setIsDriveDetailsOpen(false)}
+        />
       )}
 
       {/* Edit Opportunity Modal */}

@@ -54,6 +54,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenNotification
     isMobileMenuOpen,
     setIsMobileMenuOpen,
     switchRole: appSwitchRole,
+    openAiChat,
   } = useApp();
   const { user, currentRole, switchRole, logout, openAuthModal, isAuthenticated } = useAuth();
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
@@ -161,6 +162,13 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenNotification
       return;
     }
 
+    if (tab === 'certificates') {
+      if (currentRole !== 'student') switchRole('student');
+      navigate('/student/certificates');
+      setActiveTab('certificates');
+      return;
+    }
+
     if (tab === 'applications') {
       if (currentRole === 'company') {
         navigate('/industry/applications');
@@ -202,28 +210,22 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenNotification
       color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800',
     },
     {
-      role: 'faculty',
-      label: 'Faculty & Mentor',
-      icon: <BookOpen className="w-4 h-4" />,
-      color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
-    },
-    {
       role: 'company',
-      label: 'Company Recruiter',
+      label: 'Recruiter Portal',
       icon: <Briefcase className="w-4 h-4" />,
       color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800',
     },
     {
       role: 'college_admin',
-      label: 'College Administration',
+      label: 'Placement Cell Portal',
       icon: <Building2 className="w-4 h-4" />,
       color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800',
     },
   ];
 
   const superAdminFallbackConfig = {
-    role: 'super_admin' as UserRole,
-    label: 'College Administration',
+    role: 'college_admin' as UserRole,
+    label: 'Placement Cell Portal',
     icon: <Building2 className="w-4 h-4" />,
     color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800',
   };
@@ -286,7 +288,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenNotification
                 </span>
               </div>
               <p className="text-[11px] text-gray-600 dark:text-gray-400 font-medium hidden sm:block">
-                Academia–Industry Portal
+                Campus Placement & Career Platform
               </p>
             </div>
           </button>
@@ -391,6 +393,18 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenNotification
               </>
             )}
           </div>
+
+          {/* Ask AI Copilot Button */}
+          <button
+            id="header-ask-ai-btn"
+            onClick={() => openAiChat()}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#181920] text-white dark:bg-[#D4F73C] dark:text-[#111216] font-bold text-xs hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer border border-white/10 dark:border-black/10"
+            aria-label="Open AI Copilot Chatbot"
+            title="Chat with SkillBridge AI Copilot"
+          >
+            <Sparkles className="w-3.5 h-3.5 animate-pulse text-[#D4F73C] dark:text-[#111216]" />
+            <span className="hidden sm:inline">AI Copilot</span>
+          </button>
 
           {/* Dark / Light Toggle */}
           <button
@@ -570,8 +584,12 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenNotification
                     <button
                       role="menuitem"
                       id="profile-dropdown-certificates"
-                      onClick={() => navigateToTab('portfolio')}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-2xl hover:bg-gray-100 dark:hover:bg-white/5 transition-all text-left group cursor-pointer text-gray-700 dark:text-gray-200 font-medium"
+                      onClick={() => navigateToTab('certificates')}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-2xl transition-all text-left group cursor-pointer ${
+                        activeTab === 'certificates'
+                          ? 'bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-semibold'
+                          : 'hover:bg-gray-100 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200 font-medium'
+                      }`}
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">

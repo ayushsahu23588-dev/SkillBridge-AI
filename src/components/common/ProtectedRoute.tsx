@@ -24,10 +24,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   const roleLabels: Record<UserRole, string> = {
     student: 'Student',
-    faculty: 'Faculty Evaluator',
-    company: 'Corporate Recruiter',
-    college_admin: 'College Administrator',
-    super_admin: 'Super Administrator',
+    faculty: 'Placement Cell',
+    company: 'Recruiter',
+    college_admin: 'Placement Cell',
+    super_admin: 'Placement Cell Administrator',
   };
 
   return (

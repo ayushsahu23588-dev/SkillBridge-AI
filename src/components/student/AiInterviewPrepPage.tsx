@@ -27,7 +27,7 @@ import {
 import confetti from 'canvas-confetti';
 
 export const AiInterviewPrepPage: React.FC = () => {
-  const { studentProfile, navigate, showToast } = useApp();
+  const { studentProfile, navigate, showToast, openAiChat } = useApp();
 
   // Setup options
   const [selectedCareer, setSelectedCareer] = useState<string>('Software Developer');
@@ -152,13 +152,23 @@ export const AiInterviewPrepPage: React.FC = () => {
             </p>
           </div>
 
-          <button
-            onClick={() => navigate('/student/roadmap')}
-            className="px-4 py-2.5 rounded-2xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-800 dark:text-gray-200 font-bold text-xs transition-all flex items-center gap-2 self-start sm:self-auto cursor-pointer border border-gray-200 dark:border-white/10"
-          >
-            <Compass className="w-4 h-4" />
-            <span>Career Roadmap</span>
-          </button>
+          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+            <button
+              id="open-ai-interview-coach-btn"
+              onClick={() => openAiChat(`Can you simulate a real-time behavioral and technical mock interview with me for ${selectedCareer} at ${difficulty} level?`)}
+              className="px-4 py-2.5 rounded-2xl bg-[#181920] text-white dark:bg-white/10 hover:bg-white/20 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer border border-white/10"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#D4F73C]" />
+              <span>Ask AI Coach</span>
+            </button>
+            <button
+              onClick={() => navigate('/student/roadmap')}
+              className="px-4 py-2.5 rounded-2xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-800 dark:text-gray-200 font-bold text-xs transition-all flex items-center gap-2 cursor-pointer border border-gray-200 dark:border-white/10"
+            >
+              <Compass className="w-4 h-4" />
+              <span>Career Roadmap</span>
+            </button>
+          </div>
         </div>
       </div>
 

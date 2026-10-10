@@ -68,6 +68,7 @@ export const IndustryDashboardPage: React.FC = () => {
     shortlistCandidate,
     scheduleInterview,
     isDarkMode,
+    openAiChat,
   } = useApp();
 
   // Comprehensive Demo Applications Dataset
@@ -415,7 +416,7 @@ export const IndustryDashboardPage: React.FC = () => {
         <div>
           <div className="flex items-center gap-2.5">
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-gray-900 dark:text-white">
-              Industry Dashboard
+              Recruiter Dashboard
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
               Autumn 2026 Drive
@@ -428,6 +429,30 @@ export const IndustryDashboardPage: React.FC = () => {
 
         {/* Action Buttons */}
         <div id="industry-dash-action-toolbar" className="flex flex-wrap items-center gap-2.5">
+          <button
+            id="btn-ai-talent-copilot"
+            onClick={() => openAiChat('How can I optimize candidate screening criteria and benchmark salary packages for our campus recruitment drive?')}
+            className="px-3.5 py-2.5 rounded-xl bg-[#181920] text-white dark:bg-white/10 hover:bg-white/20 border border-white/10 font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 text-[#D4F73C]" />
+            <span>AI Talent Copilot</span>
+          </button>
+          <button
+            id="btn-calendar-dash"
+            onClick={() => navigate('/industry/calendar')}
+            className="px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#181920] border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-200 font-bold text-xs shadow-xs hover:bg-gray-50 dark:hover:bg-white/5 transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <Calendar className="w-4 h-4 text-indigo-500" />
+            <span>Drive Calendar</span>
+          </button>
+          <button
+            id="btn-verification-dash"
+            onClick={() => navigate('/industry/verification')}
+            className="px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#181920] border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-200 font-bold text-xs shadow-xs hover:bg-gray-50 dark:hover:bg-white/5 transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            <span>Credentials</span>
+          </button>
           <button
             id="btn-post-internship-dash"
             onClick={() => navigate('/industry/post-internship')}

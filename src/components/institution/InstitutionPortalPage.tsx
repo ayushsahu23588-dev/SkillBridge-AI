@@ -19,6 +19,17 @@ import { InstitutionReportsView } from './InstitutionReportsView';
 import { InstitutionNotificationsView } from './InstitutionNotificationsView';
 import { InstitutionProfileView } from './InstitutionProfileView';
 import { InstitutionSettingsView } from './InstitutionSettingsView';
+import { AtRiskStudentDetectionPanel } from './AtRiskStudentDetectionPanel';
+import { DriveSchedulerPanel } from './DriveSchedulerPanel';
+import { DepartmentComparisonDashboard } from './DepartmentComparisonDashboard';
+import { RecruiterEngagementTracker } from './RecruiterEngagementTracker';
+import { CentralPlacementDriveCalendar } from '../common/CentralPlacementDriveCalendar';
+import { CompanyHiringHistoryView } from '../common/CompanyHiringHistoryView';
+import { DocumentVerificationManager } from '../common/DocumentVerificationManager';
+import { StudentPlacementFeedbackView } from '../common/StudentPlacementFeedbackView';
+import { SkillToJobCompanyMappingView } from '../common/SkillToJobCompanyMappingView';
+import { DownloadablePlacementReportsModal } from './DownloadablePlacementReportsModal';
+import { PrivacyAndSecuritySettingsModal } from '../common/PrivacyAndSecuritySettingsModal';
 
 // Modals
 import { InstitutionStudentModal } from './InstitutionStudentModal';
@@ -42,9 +53,7 @@ export const InstitutionPortalPage: React.FC = () => {
   // Determine active tab from URL path
   const getTabFromPath = (): string => {
     if (currentPath.includes('/institution/students')) return 'students';
-    if (currentPath.includes('/institution/faculty')) return 'faculty';
-    if (currentPath.includes('/institution/industries')) return 'industries';
-    if (currentPath.includes('/institution/departments')) return 'departments';
+    if (currentPath.includes('/institution/industries') || currentPath.includes('/institution/recruiters')) return 'industries';
     if (
       currentPath.includes('/institution/skill-intelligence') ||
       currentPath.includes('/institution/skills') ||
@@ -54,17 +63,25 @@ export const InstitutionPortalPage: React.FC = () => {
       return 'skill-intelligence';
     }
     if (currentPath.includes('/institution/internships')) return 'internships';
-    if (currentPath.includes('/institution/placements')) return 'placements';
-    if (currentPath.includes('/institution/training')) return 'training';
-    if (currentPath.includes('/institution/collaborations')) return 'collaborations';
-    if (currentPath.includes('/institution/reports')) return 'reports';
-    if (currentPath.includes('/institution/notifications')) return 'notifications';
-    if (currentPath.includes('/institution/profile')) return 'profile';
+    if (currentPath.includes('/institution/placements') || currentPath.includes('/institution/drives')) return 'placements';
+    if (currentPath.includes('/institution/training') || currentPath.includes('/institution/mentorship')) return 'training';
+    if (currentPath.includes('/institution/reports') || currentPath.includes('/institution/analytics')) return 'reports';
+    if (currentPath.includes('/institution/at-risk')) return 'at-risk';
+    if (currentPath.includes('/institution/scheduler')) return 'scheduler';
+    if (currentPath.includes('/institution/comparison') || currentPath.includes('/institution/departments')) return 'comparison';
+    if (currentPath.includes('/institution/calendar') || currentPath.includes('/institution/drive-calendar')) return 'calendar';
+    if (currentPath.includes('/institution/hiring-trends') || currentPath.includes('/institution/company-history')) return 'hiring-trends';
+    if (currentPath.includes('/institution/verification') || currentPath.includes('/institution/documents')) return 'verification';
+    if (currentPath.includes('/institution/recruiter-tracking') || currentPath.includes('/institution/partners-health')) return 'recruiter-tracking';
+    if (currentPath.includes('/institution/skill-mapping')) return 'skill-mapping';
+    if (currentPath.includes('/institution/feedback') || currentPath.includes('/institution/interview-experiences')) return 'feedback';
     if (currentPath.includes('/institution/settings')) return 'settings';
     return 'dashboard';
   };
 
   const [activeTab, setActiveTab] = useState<string>(getTabFromPath);
+  const [isReportsModalOpen, setIsReportsModalOpen] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
   // Synchronize when route changes
   useEffect(() => {
@@ -79,21 +96,21 @@ export const InstitutionPortalPage: React.FC = () => {
   // Modals state
   const [selectedStudent, setSelectedStudent] = useState<InstitutionStudentItem | null>(null);
   const [isAddPlacementOpen, setIsAddPlacementOpen] = useState(false);
-  const [isAddCollabOpen, setIsAddCollabOpen] = useState(false);
-  const [selectedCollabForMou, setSelectedCollabForMou] = useState<InstitutionCollaborationItem | null>(null);
 
-  if (currentRole !== 'college_admin') {
+  if (currentRole !== 'college_admin' && currentRole !== 'faculty') {
     return <InstitutionAccessDenied />;
   }
 
   return (
-    <div id="institution-portal-root" className="w-full max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 space-y-6">
+    <div id="placement-cell-portal-root" className="w-full max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 space-y-6 font-sans">
       {/* Sub-view rendering based on activeTab */}
       {activeTab === 'dashboard' && (
         <InstitutionDashboardView
           onNavigateTab={handleNavigateTab}
           onOpenAddPlacement={() => setIsAddPlacementOpen(true)}
-          onOpenAddCollab={() => setIsAddCollabOpen(true)}
+          onOpenAddCollab={() => handleNavigateTab('placements')}
+          onOpenReportsModal={() => setIsReportsModalOpen(true)}
+          onOpenPrivacyModal={() => setIsPrivacyModalOpen(true)}
         />
       )}
 
@@ -103,11 +120,7 @@ export const InstitutionPortalPage: React.FC = () => {
         />
       )}
 
-      {activeTab === 'faculty' && <InstitutionFacultyView />}
-
       {activeTab === 'industries' && <InstitutionIndustriesView />}
-
-      {activeTab === 'departments' && <InstitutionDepartmentsView />}
 
       {activeTab === 'skill-intelligence' && <InstitutionSkillIntelligenceView />}
 
@@ -121,21 +134,29 @@ export const InstitutionPortalPage: React.FC = () => {
 
       {activeTab === 'training' && <InstitutionTrainingView />}
 
-      {activeTab === 'collaborations' && (
-        <InstitutionCollaborationsView
-          onOpenAddCollab={() => setIsAddCollabOpen(true)}
-        />
-      )}
+      {activeTab === 'at-risk' && <AtRiskStudentDetectionPanel />}
+
+      {activeTab === 'scheduler' && <DriveSchedulerPanel />}
+
+      {activeTab === 'comparison' && <DepartmentComparisonDashboard />}
+
+      {activeTab === 'calendar' && <CentralPlacementDriveCalendar />}
+
+      {activeTab === 'hiring-trends' && <CompanyHiringHistoryView />}
+
+      {activeTab === 'verification' && <DocumentVerificationManager embeddedRole="placement_cell" />}
+
+      {activeTab === 'recruiter-tracking' && <RecruiterEngagementTracker />}
+
+      {activeTab === 'skill-mapping' && <SkillToJobCompanyMappingView />}
+
+      {activeTab === 'feedback' && <StudentPlacementFeedbackView />}
 
       {activeTab === 'reports' && <InstitutionReportsView />}
 
-      {activeTab === 'notifications' && <InstitutionNotificationsView />}
-
-      {activeTab === 'profile' && <InstitutionProfileView />}
-
       {activeTab === 'settings' && <InstitutionSettingsView />}
 
-      {/* Global Modals */}
+      {/* Global Placement Record Modal */}
       {selectedStudent && (
         <InstitutionStudentModal
           student={selectedStudent}
@@ -154,20 +175,19 @@ export const InstitutionPortalPage: React.FC = () => {
         />
       )}
 
-      {isAddCollabOpen && (
-        <AddCollaborationModal
-          isOpen={isAddCollabOpen}
-          onClose={() => setIsAddCollabOpen(false)}
-          onAddCollaboration={(newCollab) => {
-            addInstitutionCollaboration(newCollab);
-          }}
+      {/* Downloadable Placement Reports Modal */}
+      {isReportsModalOpen && (
+        <DownloadablePlacementReportsModal
+          isOpen={isReportsModalOpen}
+          onClose={() => setIsReportsModalOpen(false)}
         />
       )}
 
-      {selectedCollabForMou && (
-        <ViewMouModal
-          collab={selectedCollabForMou}
-          onClose={() => setSelectedCollabForMou(null)}
+      {/* Privacy and Security Settings Modal */}
+      {isPrivacyModalOpen && (
+        <PrivacyAndSecuritySettingsModal
+          isOpen={isPrivacyModalOpen}
+          onClose={() => setIsPrivacyModalOpen(false)}
         />
       )}
     </div>

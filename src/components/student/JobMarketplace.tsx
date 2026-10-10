@@ -26,6 +26,8 @@ import {
   Loader2,
 } from 'lucide-react';
 import { AIMatchExplanation } from '../common/AIMatchExplanation';
+import { AutomaticEligibilityCheckerModal } from '../common/AutomaticEligibilityCheckerModal';
+import { PlacementDriveDetailsModal } from '../common/PlacementDriveDetailsModal';
 
 export const JobMarketplace: React.FC = () => {
   const {
@@ -52,6 +54,8 @@ export const JobMarketplace: React.FC = () => {
 
   // Gemini AI Match Explanation Modal state
   const [explainingJob, setExplainingJob] = useState<JobPosting | null>(null);
+  const [eligibilityJob, setEligibilityJob] = useState<JobPosting | null>(null);
+  const [driveDetailsJob, setDriveDetailsJob] = useState<JobPosting | null>(null);
 
   // Application Modal state
   const [applyingJob, setApplyingJob] = useState<JobPosting | null>(null);
@@ -351,6 +355,24 @@ export const JobMarketplace: React.FC = () => {
               </span>
             </div>
             <div className="flex items-center gap-2 shrink-0">
+              <button
+                id="drive-details-job-detail-btn"
+                onClick={() => setDriveDetailsJob(selectedJob)}
+                className="px-4 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-xs font-bold text-white transition-all cursor-pointer flex items-center gap-1.5 shrink-0 shadow-xs"
+                title="View Full Placement Drive Breakdown and Selection Pipeline"
+              >
+                <Sparkles className="w-4 h-4 text-[#D4F73C]" />
+                <span>Placement Drive Details</span>
+              </button>
+              <button
+                id="eligibility-job-detail-btn"
+                onClick={() => setEligibilityJob(selectedJob)}
+                className="px-4 py-3 rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-xs font-bold text-emerald-700 dark:text-emerald-300 transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+                title="Verify CGPA, Branch and Skills against Eligibility Criteria"
+              >
+                <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                <span>Eligibility Check</span>
+              </button>
               {applied && (
                 <button
                   onClick={() => navigate('/student/applications')}
@@ -1041,6 +1063,19 @@ export const JobMarketplace: React.FC = () => {
 
                   <div className="pt-3 border-t border-gray-100 dark:border-white/5 flex items-center gap-2">
                     <button
+                      id={`eligibility-check-${job.id}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEligibilityJob(job);
+                      }}
+                      className="px-2.5 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      title="Check Eligibility"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span className="hidden sm:inline">Eligibility</span>
+                    </button>
+
+                    <button
                       id={`ai-explain-job-${job.id}`}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1055,13 +1090,14 @@ export const JobMarketplace: React.FC = () => {
 
                     <button
                       id={`view-details-${job.id}`}
-                      onClick={() => {
-                        setSelectedJobId(job.id);
-                        navigate(`/student/jobs/${job.id}`);
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDriveDetailsJob(job);
                       }}
                       className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-800 dark:text-gray-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                     >
-                      <span>View Fit & Details</span>
+                      <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                      <span>Drive Details</span>
                     </button>
 
                     <button
@@ -1179,6 +1215,34 @@ export const JobMarketplace: React.FC = () => {
             const j = explainingJob;
             setExplainingJob(null);
             openApplyModal(j);
+          }}
+        />
+      )}
+
+      {/* Automatic Student Eligibility Checker Modal */}
+      {eligibilityJob && (
+        <AutomaticEligibilityCheckerModal
+          isOpen={true}
+          job={eligibilityJob}
+          customProfile={studentProfile}
+          onClose={() => setEligibilityJob(null)}
+          onApplyDirectly={() => {
+            const j = eligibilityJob;
+            setEligibilityJob(null);
+            openApplyModal(j);
+          }}
+        />
+      )}
+
+      {/* Shared Placement Drive Details Modal */}
+      {driveDetailsJob && (
+        <PlacementDriveDetailsModal
+          isOpen={true}
+          drive={driveDetailsJob}
+          onClose={() => setDriveDetailsJob(null)}
+          onApply={(d) => {
+            setDriveDetailsJob(null);
+            openApplyModal(d);
           }}
         />
       )}

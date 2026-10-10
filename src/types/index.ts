@@ -9,7 +9,13 @@ export interface User {
   phone?: string;
   organization?: string;
   department?: string;
+  designation?: string;
+  companyWebsite?: string;
+  companyType?: string;
+  graduationYear?: string;
+  cgpa?: number | string;
   verified: boolean;
+  verificationStatus?: 'verified' | 'pending' | 'rejected';
   createdAt: string;
 }
 
@@ -38,6 +44,10 @@ export interface StudentProfile {
   industryReadinessScore: number; // 0-100
   aiSkillScore: number; // 0-100
   atsResumeScore: number; // 0-100
+  interviewReadinessScore?: number;
+  aptitudeScore?: number;
+  softSkillScore?: number;
+  aptitudeCalculatedScore?: number;
   
   skills: StudentSkill[];
   certifications: Certification[];
@@ -184,6 +194,8 @@ export interface Application {
     startDate: string;
   };
 }
+
+export type ApplicationItem = Application;
 
 export interface FacultyMember {
   id: string;
@@ -554,6 +566,21 @@ export interface RegisterPayload {
   department?: string;
   degree?: string;
   batch?: string;
+  // Student Specific
+  college?: string;
+  graduationYear?: string;
+  cgpa?: number | string;
+  phone?: string;
+  // Recruiter Specific
+  companyName?: string;
+  companyWebsite?: string;
+  companyType?: string;
+  contactNumber?: string;
+  designation?: string;
+  // Placement Cell Specific
+  officerName?: string;
+  officialEmail?: string;
+  collegeUniversityName?: string;
 }
 
 export interface LoginPayload {
@@ -1261,6 +1288,325 @@ export interface PlatformSettingsData {
   defaultAssessmentCycle?: 'Semester' | 'Quarterly' | 'Annual' | string;
   autoModerateOpportunities?: boolean;
 }
+
+export interface RecruiterFeedbackItem {
+  id: string;
+  applicationId: string;
+  candidateName: string;
+  companyName: string;
+  roleTitle: string;
+  roundName: string;
+  technicalRating: number; // 1-5
+  problemSolvingRating: number; // 1-5
+  communicationRating: number; // 1-5
+  culturalFitRating: number; // 1-5
+  overallScore: number; // 0-100
+  hiringDecision: 'Strong Hire' | 'Hire' | 'Need Improvement' | 'Reject';
+  keyStrengths: string[];
+  growthAreas: string[];
+  constructiveComments: string;
+  submittedDate: string;
+}
+
+export interface OfferJoiningItem {
+  id: string;
+  applicationId: string;
+  studentId: string;
+  studentName: string;
+  companyName: string;
+  companyLogo?: string;
+  roleTitle: string;
+  packageLpa: number;
+  packageBreakdown: {
+    baseSalary: string;
+    performanceBonus?: string;
+    joiningBonus?: string;
+    esopsOrStock?: string;
+  };
+  offerDate: string;
+  joiningDate: string;
+  location: string;
+  offerLetterUrl?: string;
+  status: 'Pending Acceptance' | 'Accepted' | 'Declined' | 'Joined';
+  documentsSubmitted: {
+    name: string;
+    verified: boolean;
+    required: boolean;
+  }[];
+}
+
+export interface AuditLogItem {
+  id: string;
+  action: 'APPLICATION_SUBMITTED' | 'CANDIDATE_SHORTLISTED' | 'INTERVIEW_SCHEDULED' | 'OFFER_EXTENDED' | 'OFFER_ACCEPTED' | 'DRIVE_SCHEDULED' | 'FEEDBACK_SUBMITTED';
+  category: 'Applications' | 'Drives' | 'Offers' | 'Interviews';
+  performedBy: string;
+  role: UserRole;
+  targetEntity: string;
+  details: string;
+  timestamp: string;
+  status: 'SUCCESS' | 'FLAGGED' | 'COMPLETED';
+}
+
+export interface JdParsedResult {
+  title: string;
+  driveType: 'Placement-Drive' | 'Internship' | 'Full-time' | 'Project';
+  requiredSkills: string[];
+  preferredSkills: string[];
+  eligibleBranches: string[];
+  minCgpa: number;
+  allowedBacklogs: number;
+  salaryOrStipend: string;
+  location: string;
+  workplaceType: 'Remote' | 'On-site' | 'Hybrid';
+  duration?: string;
+  responsibilities: string[];
+  qualifications: string[];
+  summary: string;
+}
+
+// ==========================================
+// FINAL PRACTICAL FEATURES TYPES
+// ==========================================
+
+// 1. College/Department Comparison
+export interface DepartmentMetric {
+  id: string;
+  departmentCode: string;
+  departmentName: string;
+  hodName: string;
+  totalStudents: number;
+  eligibleStudents: number;
+  placedStudents: number;
+  placementPercentage: number;
+  totalOffers: number;
+  highestPackageLpa: number;
+  averagePackageLpa: number;
+  medianPackageLpa: number;
+  dreamOffersCount: number; // >= 20 LPA
+  superDreamOffersCount: number; // >= 35 LPA
+  multipleOffersCount: number;
+  averageReadinessScore: number;
+  topRecruiters: string[];
+  topSkillsInDemand: string[];
+  femalePlacementPercentage?: number;
+}
+
+// 2. Company Hiring History & Package Trends
+export interface CompanyYearlyTrend {
+  year: number; // 2022, 2023, 2024, 2025, 2026
+  totalHires: number;
+  averageCtcLpa: number;
+  highestCtcLpa: number;
+  internStipendMonthly: number; // in INR
+  rolesHired: string[];
+  ppoConversionRatePercentage: number;
+  hiringFormat: 'On-Campus' | 'Virtual' | 'Hybrid';
+}
+
+export interface CompanyHiringHistoryItem {
+  id: string;
+  companyId: string;
+  companyName: string;
+  companyLogo: string;
+  tier: 'Tier 1 Dream' | 'Super Dream' | 'Core Enterprise' | 'IT Services';
+  industry: string;
+  headquarters: string;
+  overallHiresCount: number;
+  primaryTechStack: string[];
+  preferredBranches: string[];
+  minCgpaCutoff: number;
+  selectionRatio: string; // e.g., '1 in 14'
+  yearlyTrends: CompanyYearlyTrend[];
+  ratingByStudents: number; // 1-5
+  repeatHiringConsecutiveYears: number;
+}
+
+// 3. Central Placement Drive Calendar
+export interface PlacementDriveCalendarEvent {
+  id: string;
+  companyName: string;
+  companyLogo?: string;
+  roleTitle: string;
+  eventType: 'Pre-Placement Talk' | 'Online Assessment' | 'Technical Interview' | 'HR Round' | 'Offer Rollout' | 'Registration Deadline';
+  tier: 'Dream Tier 1' | 'Super Dream' | 'Enterprise' | 'Mass Core';
+  date: string; // YYYY-MM-DD
+  startTime: string; // HH:MM
+  endTime: string; // HH:MM
+  venueOrPlatform: string;
+  mode: 'On-Campus' | 'Virtual' | 'Hybrid';
+  targetBranches: string[];
+  minCgpa: number;
+  packageLpa: number;
+  totalRegistered: number;
+  status: 'Upcoming' | 'Live Today' | 'Completed' | 'Postponed';
+  registrationDeadline: string;
+  meetingLink?: string;
+  coordinators: string;
+}
+
+// 4. Automatic Student Eligibility Checker
+export interface EligibilityCriteriaDetail {
+  criterion: string;
+  required: string | number;
+  studentValue: string | number;
+  passed: boolean;
+  notes: string;
+}
+
+export interface StudentEligibilityCheckResult {
+  jobId: string;
+  jobTitle: string;
+  companyName: string;
+  overallStatus: 'ELIGIBLE' | 'PARTIALLY_ELIGIBLE' | 'NOT_ELIGIBLE';
+  matchScore: number;
+  criteria: EligibilityCriteriaDetail[];
+  reasons: string[];
+  waiverApplicable: boolean;
+  waiverInstructions?: string;
+}
+
+export interface EligibilityWaiverRequest {
+  id: string;
+  studentId: string;
+  studentName: string;
+  studentEmail: string;
+  studentDepartment: string;
+  jobId: string;
+  jobTitle: string;
+  companyName: string;
+  reason: string;
+  requestedAt: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  decisionNotes?: string;
+  decidedBy?: string;
+}
+
+// 5. Document Verification
+export interface StudentVerifiableDocument {
+  id: string;
+  studentId: string;
+  studentName: string;
+  studentDepartment: string;
+  documentType: 'Resume ATS Version' | 'Degree / Provisional Certificate' | 'Semester Grade Sheet' | 'Industry Certification' | 'Project Proof' | 'Govt ID Proof';
+  documentTitle: string;
+  fileUrl: string;
+  fileSizeMb: number;
+  uploadedAt: string;
+  status: 'Verified' | 'Pending Review' | 'Revision Requested' | 'Rejected';
+  verifiedBy?: string;
+  verifiedAt?: string;
+  remarks?: string;
+  credentialIssuer?: string;
+}
+
+// 6. Student Drive / Placement Feedback
+export interface StudentPlacementFeedback {
+  id: string;
+  studentId: string;
+  studentName: string;
+  studentDepartment: string;
+  studentAvatar?: string;
+  companyName: string;
+  roleTitle: string;
+  driveDate: string;
+  selectionOutcome: 'Selected' | 'Final Round Reached' | 'Technical Round Reached' | 'Rejected in OA';
+  oaDifficulty: number; // 1-5
+  techDifficulty: number; // 1-5
+  hrDifficulty: number; // 1-5
+  questionsAsked: string[];
+  keyTopicsTested: string[];
+  experienceSummary: string;
+  preparationAdvice: string;
+  submittedAt: string;
+  upvotesCount: number;
+  packageOfferedLpa?: number;
+}
+
+// 7. Recruiter Engagement Tracking
+export interface RecruiterEngagementMetric {
+  id: string;
+  companyId: string;
+  companyName: string;
+  companyLogo: string;
+  spocName: string;
+  spocEmail: string;
+  spocPhone: string;
+  tier: string;
+  engagementHealthScore: number; // 0-100
+  outreachStatus: 'Partner Active' | 'MOU Active' | 'Drive Scheduled' | 'Invite Sent' | 'Follow-up Needed' | 'Completed Season';
+  lastInteractionDate: string;
+  invitationsSent: number;
+  drivesConducted: number;
+  totalOffersExtended: number;
+  averageTimeToShortlistDays: number;
+  offerTurnaroundDays: number;
+  studentSatisfactionRating: number; // 1-5
+  repeatHiringWillingnessPercentage: number;
+  notes: string;
+}
+
+// 8. Skill-to-Job / Company Mapping
+export interface SkillCompanyMapping {
+  skillId: string;
+  skillName: string;
+  category: 'Frontend' | 'Backend' | 'Cloud & DevOps' | 'AI & Data Science' | 'Mobile' | 'Systems & Core';
+  cohortProficiencyPercentage: number;
+  recruiterDemandPercentage: number;
+  demandSupplyGapPercentage: number;
+  hiringCompanies: {
+    companyName: string;
+    companyLogo: string;
+    roles: string[];
+    packageRange: string;
+    tier: string;
+  }[];
+  recommendedBenchmark: string;
+  benchmarkProjectTitle: string;
+}
+
+// 9. Downloadable Placement Reports
+export interface PlacementReportSummary {
+  academicYear: string;
+  batch: string;
+  totalEligible: number;
+  totalOffers: number;
+  uniquePlaced: number;
+  placementRatePercentage: number;
+  highestPackageLpa: number;
+  averagePackageLpa: number;
+  medianPackageLpa: number;
+  dreamOffersCount: number;
+  totalVisitingCompanies: number;
+  departmentBreakdown: DepartmentMetric[];
+  topRecruitersSummary: { company: string; offers: number; avgCtc: number }[];
+  genderEquity: { malePlacedPercentage: number; femalePlacedPercentage: number };
+  generatedAt: string;
+}
+
+// 10. Role-Based Privacy and Security Controls
+export interface RoleBasedPrivacySecurityConfig {
+  studentPrivacy: {
+    maskContactUntilShortlist: boolean;
+    hideGpaFromPublicDirectory: boolean;
+    restrictTranscriptsToVerifiedRecruiters: boolean;
+    allowDirectRecruiterContact: boolean;
+    anonymizeFeedbackSubmissions: boolean;
+  };
+  recruiterSecurity: {
+    requireVerifiedStatusForDownloads: boolean;
+    restrictStudentPiiForUnverified: boolean;
+    twoFactorAuthenticationMandatory: boolean;
+    sessionTimeoutMinutes: number;
+    logResumeExports: boolean;
+  };
+  placementCellAudit: {
+    logAllEligibilityWaivers: boolean;
+    requireMultiSignForOfferRevocation: boolean;
+    watermarkExportedReports: boolean;
+    auditLogRetentionDays: number;
+  };
+}
+
 
 
 

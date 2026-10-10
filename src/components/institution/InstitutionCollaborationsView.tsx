@@ -71,10 +71,10 @@ export const InstitutionCollaborationsView: React.FC<InstitutionCollaborationsVi
         <div>
           <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
             <Building2 className="w-5 h-5 text-purple-500" />
-            <span>Industry-Academia Collaboration & Corporate MoUs</span>
+            <span>Industry-Academia Collaboration & Corporate Partnerships</span>
           </h2>
           <p className="text-xs text-gray-400">
-            Institutional agreements with leading corporate enterprises for internships, research grants, and curriculum co-design.
+            Institutional agreements with leading corporate enterprises for campus drives, internships, and skill training.
           </p>
         </div>
 
@@ -83,7 +83,7 @@ export const InstitutionCollaborationsView: React.FC<InstitutionCollaborationsVi
           className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer transition-all"
         >
           <Plus className="w-4 h-4" />
-          <span>Register New MoU</span>
+          <span>Register New Partnership</span>
         </button>
       </div>
 
@@ -187,7 +187,7 @@ export const InstitutionCollaborationsView: React.FC<InstitutionCollaborationsVi
                 className="text-purple-500 hover:text-purple-400 font-semibold flex items-center gap-1 cursor-pointer"
               >
                 <FileText className="w-3.5 h-3.5" />
-                <span>View Signed MoU</span>
+                <span>View Agreement</span>
               </button>
 
               <span className="text-gray-400 text-[11px]">
@@ -198,7 +198,7 @@ export const InstitutionCollaborationsView: React.FC<InstitutionCollaborationsVi
         ))}
       </div>
 
-      {/* MoU Document Viewer Modal */}
+      {/* Partnership Document Viewer Modal */}
       {isMouDocModalOpen && selectedCollab && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
           <div
@@ -210,7 +210,7 @@ export const InstitutionCollaborationsView: React.FC<InstitutionCollaborationsVi
               <div className="flex items-center gap-2.5">
                 <ShieldCheck className="w-6 h-6 text-purple-500" />
                 <div>
-                  <h3 className="text-base font-bold">Memorandum of Understanding (MoU)</h3>
+                  <h3 className="text-base font-bold">Institutional Partnership Agreement</h3>
                   <p className="text-xs text-gray-400">Official Institutional Repository Document</p>
                 </div>
               </div>
@@ -228,7 +228,7 @@ export const InstitutionCollaborationsView: React.FC<InstitutionCollaborationsVi
               </div>
 
               <p>
-                <strong>Partnership Scope:</strong> This Memorandum formalizes the mutual collaboration between Apex Institute and {selectedCollab.industry} under the scope of <em>{selectedCollab.collaborationType}</em>.
+                <strong>Partnership Scope:</strong> This agreement formalizes mutual collaboration between Apex Institute and {selectedCollab.industry} under the scope of <em>{selectedCollab.collaborationType}</em>.
               </p>
 
               <p>
@@ -257,7 +257,7 @@ export const InstitutionCollaborationsView: React.FC<InstitutionCollaborationsVi
                   onClick={() => handleStatusChange(selectedCollab.id, 'Active')}
                   className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold cursor-pointer"
                 >
-                  Activate MoU
+                  Activate Partner
                 </button>
                 <button
                   onClick={() => handleStatusChange(selectedCollab.id, 'Completed')}

@@ -58,7 +58,7 @@ export const StudentSettingsView: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${studentProfile.name.replace(/\s+/g, '_')}_EduBridge_Profile.json`;
+    link.download = `${studentProfile.name.replace(/\s+/g, '_')}_SkillBridge_Profile.json`;
     link.click();
     showToast('Student profile data package exported!');
   };

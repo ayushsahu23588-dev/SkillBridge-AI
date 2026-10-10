@@ -38,13 +38,26 @@ import {
 } from 'recharts';
 import { motion } from 'motion/react';
 import { AIInsightCard } from '../common/AIInsightCard';
+import { PlacementReadinessScoreCard } from '../common/PlacementReadinessScoreCard';
+import { PlacementJourneyTimeline } from '../common/PlacementJourneyTimeline';
+import { WhatIfPlacementSimulator } from './WhatIfPlacementSimulator';
+import { ExplainableCompanyMatchCard } from '../common/ExplainableCompanyMatchCard';
+import { AutomaticEligibilityCheckerModal } from '../common/AutomaticEligibilityCheckerModal';
+import { PlacementDriveDetailsModal } from '../common/PlacementDriveDetailsModal';
+import { JobPosting } from '../../types';
 
 export const StudentDashboard: React.FC = () => {
-  const { studentProfile, jobs, applications, setActiveTab, isDarkMode, navigate } = useApp();
+  const { studentProfile, jobs, applications, setActiveTab, isDarkMode, navigate, openAiChat } = useApp();
 
   const userApps = applications.filter((a) => a.studentId === studentProfile.id);
   const activeRoadmap = studentProfile.activeRoadmaps[0];
   const recommendedJobs = jobs.slice(0, 3);
+
+  // New placement intelligence state
+  const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
+  const [selectedJobForExplanation, setSelectedJobForExplanation] = useState<JobPosting | null>(null);
+  const [selectedJobForEligibility, setSelectedJobForEligibility] = useState<JobPosting | null>(null);
+  const [selectedDriveForDetails, setSelectedDriveForDetails] = useState<JobPosting | null>(null);
 
   // Calendar interactive state
   const [selectedDay, setSelectedDay] = useState<number>(17);
@@ -226,6 +239,38 @@ export const StudentDashboard: React.FC = () => {
         {/* Quick Action Buttons */}
         <div className="flex items-center gap-2 flex-wrap">
           <button
+            id="hero-simulator-btn"
+            onClick={() => setIsSimulatorOpen(true)}
+            className="px-3.5 py-2 rounded-2xl bg-[#D4F73C] hover:bg-[#c6ea31] text-[#121316] text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <Zap className="w-3.5 h-3.5" />
+            <span>What-If Simulator</span>
+          </button>
+          <button
+            id="hero-drive-calendar-btn"
+            onClick={() => navigate('/student/drive-calendar')}
+            className="px-3.5 py-2 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <CalendarIcon className="w-3.5 h-3.5 text-[#D4F73C]" />
+            <span>Drive Calendar</span>
+          </button>
+          <button
+            id="hero-interview-feedback-btn"
+            onClick={() => navigate('/student/interview-feedback')}
+            className="px-3.5 py-2 rounded-2xl bg-white dark:bg-[#181920] hover:bg-gray-50 dark:hover:bg-white/5 border border-gray-300 dark:border-white/10 text-xs font-bold text-black dark:text-gray-200 shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+            <span>Interview Feedback</span>
+          </button>
+          <button
+            id="hero-skill-matrix-btn"
+            onClick={() => navigate('/student/skill-mapping')}
+            className="px-3.5 py-2 rounded-2xl bg-white dark:bg-[#181920] hover:bg-gray-50 dark:hover:bg-white/5 border border-gray-300 dark:border-white/10 text-xs font-bold text-black dark:text-gray-200 shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <Layers className="w-3.5 h-3.5 text-teal-500" />
+            <span>Skill Matrix</span>
+          </button>
+          <button
             id="hero-scan-resume-btn"
             onClick={() => navigate('/student/resume-studio')}
             className="px-3.5 py-2 rounded-2xl bg-white dark:bg-[#181920] hover:bg-gray-50 dark:hover:bg-white/5 border border-gray-300 dark:border-white/10 text-xs font-bold text-black dark:text-gray-200 shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
@@ -236,21 +281,26 @@ export const StudentDashboard: React.FC = () => {
           <button
             id="hero-mock-interview-btn"
             onClick={() => navigate('/student/interview-prep')}
-            className="px-3.5 py-2 rounded-2xl bg-[#D4F73C] hover:bg-[#c6ea31] text-[#121316] text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
-          >
-            <Bot className="w-3.5 h-3.5" />
-            <span>AI Mock Interview</span>
-          </button>
-          <button
-            id="hero-view-roadmap-btn"
-            onClick={() => navigate('/student/roadmap')}
             className="px-3.5 py-2 rounded-2xl bg-white dark:bg-[#181920] hover:bg-gray-50 dark:hover:bg-white/5 border border-gray-300 dark:border-white/10 text-xs font-bold text-black dark:text-gray-200 shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <Compass className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Roadmap</span>
+            <Bot className="w-3.5 h-3.5" />
+            <span>Mock Interview</span>
           </button>
         </div>
       </div>
+
+      {/* 1b. AI Placement Readiness Score (Feature 1) */}
+      <PlacementReadinessScoreCard
+        profile={studentProfile}
+        onOpenSimulator={() => setIsSimulatorOpen(true)}
+        onOpenRoadmap={() => navigate('/student/roadmap')}
+      />
+
+      {/* 1c. Placement Journey 9-Stage Pipeline (Feature 6) */}
+      <PlacementJourneyTimeline
+        profile={studentProfile}
+        applications={applications}
+      />
 
       {/* AI Career Insight Card (Step 10 Requirement) */}
       <AIInsightCard onViewAnalysis={() => navigate('/student/skill-gap')} />
@@ -313,10 +363,10 @@ export const StudentDashboard: React.FC = () => {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-6 h-6 rounded-lg bg-[#D4F73C] text-[#121316] flex items-center justify-center font-bold text-xs">
-                  EB
+                  SB
                 </div>
                 <span className="text-xs font-semibold tracking-tight text-white">
-                  EduBridge AI
+                  SkillBridge AI
                 </span>
               </div>
               <h3 className="text-lg font-bold text-white tracking-tight mt-1">
@@ -859,17 +909,35 @@ export const StudentDashboard: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 self-end sm:self-center">
+                  <div className="flex items-center gap-2 self-end sm:self-center flex-wrap">
+                    <button
+                      id={`check-job-eligibility-${job.id}`}
+                      onClick={() => setSelectedJobForEligibility(job)}
+                      className="px-3 py-1.5 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                      title="Run automatic eligibility check for CGPA, branch, batch, and arrears"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>Check Eligibility</span>
+                    </button>
+                    <button
+                      id={`explain-job-match-${job.id}`}
+                      onClick={() => setSelectedJobForExplanation(job)}
+                      className="px-3 py-1.5 rounded-xl border border-purple-300 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/40 text-purple-700 dark:text-purple-300 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                      title="View AI explainable match percentage, missing skills, and eligibility breakdown"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                      <span>Explain Match</span>
+                    </button>
                     <button
                       id={`view-job-details-${job.id}`}
-                      onClick={() => navigate('/student/internships')}
+                      onClick={() => setSelectedDriveForDetails(job)}
                       className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                         isApplied
                           ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
                           : 'bg-black hover:bg-gray-800 text-white dark:bg-[#D4F73C] dark:hover:bg-[#c6ea31] dark:text-[#121316] shadow-xs'
                       }`}
                     >
-                      {isApplied ? 'Applied ✓' : 'View & Apply'}
+                      {isApplied ? 'Applied (Details)' : 'Drive Details & Apply'}
                     </button>
                   </div>
                 </div>
@@ -1009,14 +1077,25 @@ export const StudentDashboard: React.FC = () => {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => navigate('/student/roadmap')}
-            className="w-full mt-4 py-2.5 px-4 rounded-2xl bg-[#D4F73C] hover:bg-[#c6ea31] text-[#121316] font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
-          >
-            <span>Continue Active Roadmap</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
+          <div className="mt-4 pt-3 border-t border-white/10 flex flex-col sm:flex-row gap-2">
+            <button
+              type="button"
+              id="student-dashboard-ask-ai-coach-btn"
+              onClick={() => openAiChat('Analyze my placement readiness and suggest how I can reach 95%+ alignment for Tier-1 recruitment drives.')}
+              className="flex-1 py-2.5 px-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-white/10"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#D4F73C]" />
+              <span>Ask AI Coach</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/student/roadmap')}
+              className="py-2.5 px-4 rounded-2xl bg-[#D4F73C] hover:bg-[#c6ea31] text-[#121316] font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              <span>Continue Roadmap</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1085,6 +1164,56 @@ export const StudentDashboard: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* 8. Explainable Company Matching Modal */}
+      {selectedJobForExplanation && (
+        <ExplainableCompanyMatchCard
+          job={selectedJobForExplanation}
+          profile={studentProfile}
+          isModal={true}
+          onClose={() => setSelectedJobForExplanation(null)}
+          onApply={() => {
+            setSelectedJobForExplanation(null);
+            navigate('/student/internships');
+          }}
+        />
+      )}
+
+      {/* 9. What-If Placement Simulator Modal */}
+      {isSimulatorOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/70 backdrop-blur-md overflow-y-auto">
+          <div className="relative w-full max-w-5xl my-8 rounded-3xl bg-white dark:bg-[#14151B] border border-gray-200 dark:border-white/10 p-4 sm:p-6 shadow-2xl">
+            <WhatIfPlacementSimulator
+              isOpen={true}
+              onClose={() => setIsSimulatorOpen(false)}
+              onApplyGoal={() => setIsSimulatorOpen(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 10. Automatic Eligibility Checker Modal */}
+      {selectedJobForEligibility && (
+        <AutomaticEligibilityCheckerModal
+          isOpen={true}
+          job={selectedJobForEligibility}
+          customProfile={studentProfile}
+          onClose={() => setSelectedJobForEligibility(null)}
+          onApplyDirectly={() => {
+            setSelectedJobForEligibility(null);
+            navigate('/student/internships');
+          }}
+        />
+      )}
+
+      {/* 11. Shared Placement Drive Details Modal */}
+      {selectedDriveForDetails && (
+        <PlacementDriveDetailsModal
+          isOpen={true}
+          drive={selectedDriveForDetails}
+          onClose={() => setSelectedDriveForDetails(null)}
+        />
       )}
     </div>
   );

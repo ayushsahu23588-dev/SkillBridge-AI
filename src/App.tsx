@@ -28,8 +28,10 @@ import { InternshipMarketplace } from './components/student/InternshipMarketplac
 import { JobMarketplace } from './components/student/JobMarketplace';
 import { ApplicationTrackingPage } from './components/student/ApplicationTrackingPage';
 import { DigitalPortfolioPage } from './components/student/DigitalPortfolioPage';
+import { CertificatesPage } from './components/student/CertificatesPage';
 import { AiResumeStudio } from './components/student/AiResumeStudio';
 import { AiInterviewPrepPage } from './components/student/AiInterviewPrepPage';
+import { WhatIfPlacementSimulator } from './components/student/WhatIfPlacementSimulator';
 import { StudentProfileView } from './components/student/StudentProfileView';
 import { MentorshipAndWorkshops } from './components/student/MentorshipAndWorkshops';
 import { MessagesPage } from './components/common/MessagesPage';
@@ -54,6 +56,12 @@ import { PostOpportunityPage } from './components/industry/PostOpportunityPage';
 // Institution Portal Components
 import { InstitutionPortalPage } from './components/institution/InstitutionPortalPage';
 
+// Practical Placement Common Components
+import { CentralPlacementDriveCalendar } from './components/common/CentralPlacementDriveCalendar';
+import { DocumentVerificationManager } from './components/common/DocumentVerificationManager';
+import { StudentPlacementFeedbackView } from './components/common/StudentPlacementFeedbackView';
+import { SkillToJobCompanyMappingView } from './components/common/SkillToJobCompanyMappingView';
+
 // Platform Administration Portal Components
 import { AdminPortalPage } from './components/admin/AdminPortalPage';
 
@@ -69,6 +77,7 @@ const MainAppLayout: React.FC = () => {
     isMobileMenuOpen,
     setIsMobileMenuOpen,
     navigate,
+    openAiChat,
   } = useApp();
   const {
     isAuthenticated,
@@ -191,14 +200,25 @@ const MainAppLayout: React.FC = () => {
       return <MessagesPage />;
     }
 
+    // 0c. Global Certificates Route
+    if (currentPath === '/certificates' || currentPath.endsWith('/certificates') || currentPath.includes('/certificates')) {
+      return <CertificatesPage />;
+    }
+
     // 1. Student Portal Routes
     if (currentRole === 'student' || currentPath.startsWith('/student')) {
+      if (currentPath.includes('/drive-calendar') || currentPath.includes('/calendar')) return <CentralPlacementDriveCalendar />;
+      if (currentPath.includes('/skill-mapping')) return <SkillToJobCompanyMappingView />;
+      if (currentPath.includes('/interview-feedback') || currentPath.includes('/feedback')) return <StudentPlacementFeedbackView />;
+      if (currentPath.includes('/documents') || currentPath.includes('/verification')) return <DocumentVerificationManager embeddedRole="student" />;
       if (currentPath.includes('/profile')) return <StudentProfileView />;
       if (currentPath.includes('/mentorship')) return <MentorshipAndWorkshops />;
       if (currentPath.includes('/messages')) return <MessagesPage />;
+      if (currentPath.includes('/certificates')) return <CertificatesPage />;
       if (currentPath.includes('/assessment')) return <StudentAssessmentPage />;
       if (currentPath.includes('/skills')) return <MySkillsPage />;
       if (currentPath.includes('/skill-gap')) return <SkillGapPage />;
+      if (currentPath.includes('/simulator')) return <WhatIfPlacementSimulator isOpen={true} />;
       if (currentPath.includes('/roadmap')) return <CareerRoadmapPage />;
       if (currentPath.includes('/internships')) return <InternshipMarketplace />;
       if (currentPath.includes('/jobs')) return <JobMarketplace />;
@@ -209,17 +229,24 @@ const MainAppLayout: React.FC = () => {
       return <StudentDashboard />;
     }
 
-    // 2. Faculty Portal Routes
-    if (currentRole === 'faculty' || currentPath.startsWith('/faculty')) {
-      return <FacultyPortalPage />;
-    }
-
-    // 3. Industry Portal Routes
-    if (currentRole === 'company' || currentPath.startsWith('/industry')) {
-      if (currentPath.includes('/post-internship')) return <PostInternshipPage />;
-      if (currentPath.includes('/post-job')) return <PostJobPage />;
-      if (currentPath.includes('/post-project')) return <PostProjectPage />;
-      if (currentPath.includes('/post-opportunity')) return <PostOpportunityPage />;
+    // 2. Recruiter Portal Routes (formerly Industry Portal)
+    if (
+      currentRole === 'company' ||
+      currentPath.startsWith('/industry') ||
+      currentPath.startsWith('/recruiter')
+    ) {
+      if (currentPath.includes('/calendar')) return <CentralPlacementDriveCalendar />;
+      if (currentPath.includes('/verification')) return <DocumentVerificationManager embeddedRole="recruiter" />;
+      // Merged Create Drive / Opportunity Feature
+      if (
+        currentPath.includes('/post-internship') ||
+        currentPath.includes('/post-job') ||
+        currentPath.includes('/post-project') ||
+        currentPath.includes('/post-opportunity') ||
+        currentPath.includes('/create-drive')
+      ) {
+        return <PostOpportunityPage />;
+      }
       if (currentPath.includes('/manage-opportunities') || currentPath.includes('/opportunities'))
         return <ManageOpportunitiesPage />;
       if (currentPath.includes('/candidates')) return <AiCandidateMatchingPage />;
@@ -233,15 +260,17 @@ const MainAppLayout: React.FC = () => {
       return <IndustryDashboardPage />;
     }
 
-    // 4. Institution Portal Routes
+    // 3. Placement Cell Portal Routes (formerly Institution Portal)
     if (
       currentRole === 'college_admin' ||
-      currentPath.startsWith('/institution')
+      currentRole === 'faculty' ||
+      currentPath.startsWith('/institution') ||
+      currentPath.startsWith('/placement-cell')
     ) {
       return <InstitutionPortalPage />;
     }
 
-    // 5. Super Admin / Platform Administration Routes
+    // 4. Fallback Admin Route (only if directly visited)
     if (
       currentRole === 'super_admin' ||
       currentPath.startsWith('/admin')
@@ -272,7 +301,7 @@ const MainAppLayout: React.FC = () => {
         <aside className="w-64 shrink-0 hidden lg:block">
           <div className="sticky top-24">
             <Sidebar
-              onSelectAiChat={() => setIsCareerChatOpen(true)}
+              onSelectAiChat={() => openAiChat()}
               onOpenNotifications={() => setIsNotificationsOpen(true)}
             />
           </div>
@@ -317,7 +346,7 @@ const MainAppLayout: React.FC = () => {
               <Sidebar
                 onSelectAiChat={() => {
                   setIsMobileMenuOpen(false);
-                  setIsCareerChatOpen(true);
+                  openAiChat();
                 }}
                 onOpenNotifications={() => {
                   setIsMobileMenuOpen(false);

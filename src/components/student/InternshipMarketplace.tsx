@@ -26,6 +26,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { AIMatchExplanation } from '../common/AIMatchExplanation';
+import { AutomaticEligibilityCheckerModal } from '../common/AutomaticEligibilityCheckerModal';
 
 export const InternshipMarketplace: React.FC = () => {
   const {
@@ -52,6 +53,7 @@ export const InternshipMarketplace: React.FC = () => {
 
   // Gemini AI Match Explanation Modal state
   const [explainingJob, setExplainingJob] = useState<JobPosting | null>(null);
+  const [eligibilityJob, setEligibilityJob] = useState<JobPosting | null>(null);
 
   // Application Modal state
   const [applyingJob, setApplyingJob] = useState<JobPosting | null>(null);
@@ -712,6 +714,19 @@ export const InternshipMarketplace: React.FC = () => {
 
                   <div className="pt-3 border-t border-gray-100 dark:border-white/5 flex items-center gap-2">
                     <button
+                      id={`eligibility-check-${job.id}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEligibilityJob(job);
+                      }}
+                      className="px-2.5 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      title="Check Eligibility"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span className="hidden sm:inline">Eligibility</span>
+                    </button>
+
+                    <button
                       id={`ai-explain-${job.id}`}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -848,6 +863,21 @@ export const InternshipMarketplace: React.FC = () => {
           onApply={() => {
             const j = explainingJob;
             setExplainingJob(null);
+            openApplyModal(j);
+          }}
+        />
+      )}
+
+      {/* Automatic Student Eligibility Checker Modal */}
+      {eligibilityJob && (
+        <AutomaticEligibilityCheckerModal
+          isOpen={true}
+          job={eligibilityJob}
+          customProfile={studentProfile}
+          onClose={() => setEligibilityJob(null)}
+          onApplyDirectly={() => {
+            const j = eligibilityJob;
+            setEligibilityJob(null);
             openApplyModal(j);
           }}
         />

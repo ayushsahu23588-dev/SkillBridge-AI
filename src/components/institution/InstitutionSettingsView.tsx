@@ -242,7 +242,7 @@ export const InstitutionSettingsView: React.FC = () => {
             <label className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-white/5 cursor-pointer">
               <div>
                 <span className="font-bold block text-gray-900 dark:text-white">
-                  Corporate MoU Expiration & Renewal Alerts
+                  Corporate Partnership Expiration & Renewal Alerts
                 </span>
                 <span className="text-gray-400 text-[11px]">
                   Trigger renewal review 60 days before institutional partnership expiry.

@@ -20,7 +20,13 @@ import {
   ChevronRight,
   BookOpen,
   Layers,
+  Zap,
+  Scale,
+  Lock,
+  FileSpreadsheet,
+  MessageSquare,
 } from 'lucide-react';
+import { skillBridgeEngine } from '../../services/skillBridgeIntelligenceEngine';
 import {
   ResponsiveContainer,
   BarChart,
@@ -40,12 +46,16 @@ interface InstitutionDashboardViewProps {
   onNavigateTab: (tab: string) => void;
   onOpenAddPlacement: () => void;
   onOpenAddCollab: () => void;
+  onOpenReportsModal?: () => void;
+  onOpenPrivacyModal?: () => void;
 }
 
 export const InstitutionDashboardView: React.FC<InstitutionDashboardViewProps> = ({
   onNavigateTab,
   onOpenAddPlacement,
   onOpenAddCollab,
+  onOpenReportsModal,
+  onOpenPrivacyModal,
 }) => {
   const {
     institutionStudents,
@@ -57,6 +67,7 @@ export const InstitutionDashboardView: React.FC<InstitutionDashboardViewProps> =
     institutionCollaborations,
     industrialTraining,
     isDarkMode,
+    openAiChat,
   } = useApp();
 
   // Dynamic calculations from live context data
@@ -82,6 +93,14 @@ export const InstitutionDashboardView: React.FC<InstitutionDashboardViewProps> =
     (s) => (s.skillReadiness || 0) >= 75
   ).length;
   const placementReadyPct = Math.round((placementReadyStudents / (totalStudents || 1)) * 100);
+
+  // AI At-Risk Student assessments
+  const atRiskAssessments = React.useMemo(
+    () => institutionStudents.map((s) => skillBridgeEngine.evaluateStudentRisk(s)),
+    [institutionStudents]
+  );
+  const highRiskStudentsCount = atRiskAssessments.filter((r) => r.riskLevel === 'HIGH_RISK').length;
+  const needsImprovementCount = atRiskAssessments.filter((r) => r.riskLevel === 'NEEDS_IMPROVEMENT').length;
 
   // Highest, average, median CTC from institution placements
   const placementSalaries = institutionPlacements
@@ -154,43 +173,73 @@ export const InstitutionDashboardView: React.FC<InstitutionDashboardViewProps> =
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-lime-400 text-black uppercase tracking-wider">
-                Autonomous Institution
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#D4F73C] text-black uppercase tracking-wider">
+                Placement Directorate
               </span>
               <span className="text-xs text-gray-300 font-medium flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-lime-400" />
-                NAAC A++ • Tier-1 NBA Accredited
+                <ShieldCheck className="w-3.5 h-3.5 text-[#D4F73C]" />
+                University Placement & Training Cell
               </span>
             </div>
             <h1 className="text-2xl lg:text-3xl font-black tracking-tight">
-              Apex Institute Administration Portal
+              Campus Placement Cell Portal
             </h1>
             <p className="text-sm text-gray-300 max-w-2xl mt-1">
-              Institutional intelligence dashboard synchronizing academic progress, industry skill readiness, internships, campus placements, and corporate MoUs.
+              Live campus recruitment tracking, recruiter partnerships, student placement readiness scores, and verified offer telemetry.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
             <button
+              onClick={() => onNavigateTab('comparison')}
+              className="px-3.5 py-2.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 font-bold text-xs flex items-center gap-1.5 border border-indigo-500/30 transition-all cursor-pointer"
+            >
+              <Scale className="w-4 h-4 text-[#D4F73C]" />
+              <span>Branch Comparison</span>
+            </button>
+            <button
+              onClick={() => onNavigateTab('calendar')}
+              className="px-3.5 py-2.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 font-bold text-xs flex items-center gap-1.5 border border-purple-500/30 transition-all cursor-pointer"
+            >
+              <Calendar className="w-4 h-4 text-[#D4F73C]" />
+              <span>Drive Calendar</span>
+            </button>
+            <button
+              onClick={() => onNavigateTab('verification')}
+              className="px-3.5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-xs flex items-center gap-1.5 border border-emerald-500/30 transition-all cursor-pointer"
+            >
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <span>Verify Documents</span>
+            </button>
+            <button
+              onClick={() => onNavigateTab('at-risk')}
+              className="px-3.5 py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-bold text-xs flex items-center gap-1.5 border border-rose-500/30 transition-all cursor-pointer"
+            >
+              <AlertTriangle className="w-4 h-4 text-rose-400" />
+              <span>At-Risk Detection</span>
+            </button>
+            <button
+              onClick={onOpenReportsModal || (() => onNavigateTab('reports'))}
+              className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs flex items-center gap-1.5 border border-white/15 transition-all cursor-pointer"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-[#D4F73C]" />
+              <span>Download Reports</span>
+            </button>
+            {onOpenPrivacyModal && (
+              <button
+                onClick={onOpenPrivacyModal}
+                className="px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-medium text-xs flex items-center gap-1 border border-white/5 transition-all cursor-pointer"
+              >
+                <Lock className="w-3.5 h-3.5 text-gray-400" />
+                <span>Security</span>
+              </button>
+            )}
+            <button
               onClick={onOpenAddPlacement}
-              className="px-4 py-2.5 rounded-xl bg-lime-400 hover:bg-lime-300 text-black font-bold text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-[#D4F73C] hover:bg-[#c7eb34] text-black font-bold text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>Record Placement</span>
-            </button>
-            <button
-              onClick={onOpenAddCollab}
-              className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs flex items-center gap-1.5 border border-white/10 transition-all cursor-pointer"
-            >
-              <Building2 className="w-4 h-4 text-lime-400" />
-              <span>Register MoU</span>
-            </button>
-            <button
-              onClick={() => onNavigateTab('reports')}
-              className="px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-200 font-medium text-xs flex items-center gap-1.5 border border-white/5 transition-all cursor-pointer"
-            >
-              <Download className="w-4 h-4" />
-              <span>Accreditation Report</span>
+              <span>Record Offer</span>
             </button>
           </div>
         </div>
@@ -219,9 +268,9 @@ export const InstitutionDashboardView: React.FC<InstitutionDashboardViewProps> =
           </div>
         </div>
 
-        {/* Total Faculty */}
+        {/* Highest CTC Package */}
         <div
-          onClick={() => onNavigateTab('faculty')}
+          onClick={() => onNavigateTab('placements')}
           className={`p-4 rounded-2xl border transition-all cursor-pointer hover:scale-[1.02] ${
             isDarkMode
               ? 'bg-[#18191E] border-white/5 hover:border-lime-400/30'
@@ -229,18 +278,18 @@ export const InstitutionDashboardView: React.FC<InstitutionDashboardViewProps> =
           }`}
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-gray-400">Total Faculty</span>
+            <span className="text-xs font-semibold text-gray-400">Highest CTC</span>
             <div className="w-7 h-7 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center">
-              <GraduationCap className="w-4 h-4" />
+              <Award className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black">{totalFaculty}</div>
+          <div className="text-2xl font-black">₹{highestCtc} LPA</div>
           <div className="text-[11px] text-gray-400 mt-1 flex items-center gap-1">
-            <span className="text-purple-400 font-bold">100%</span> Industry Mentors
+            <span className="text-purple-400 font-bold">₹{avgCtc} LPA</span> Avg Batch CTC
           </div>
         </div>
 
-        {/* Registered Industries */}
+        {/* Recruiter Partners */}
         <div
           onClick={() => onNavigateTab('industries')}
           className={`p-4 rounded-2xl border transition-all cursor-pointer hover:scale-[1.02] ${
@@ -250,14 +299,14 @@ export const InstitutionDashboardView: React.FC<InstitutionDashboardViewProps> =
           }`}
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-gray-400">Industries</span>
+            <span className="text-xs font-semibold text-gray-400">Recruiters</span>
             <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
               <Building2 className="w-4 h-4" />
             </div>
           </div>
           <div className="text-2xl font-black">{totalCompanies}</div>
           <div className="text-[11px] text-gray-400 mt-1 flex items-center gap-1">
-            <span className="text-emerald-500 font-bold">{verifiedCompanies}</span> Verified
+            <span className="text-emerald-500 font-bold">{verifiedCompanies}</span> Verified Partners
           </div>
         </div>
 
@@ -325,6 +374,96 @@ export const InstitutionDashboardView: React.FC<InstitutionDashboardViewProps> =
         </div>
       </div>
 
+      {/* AI Placement Intelligence Engine Highlights */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* At-Risk Student Early Warning Card */}
+        <div
+          id="dashboard-at-risk-card"
+          onClick={() => onNavigateTab('at-risk')}
+          className={`p-6 rounded-3xl border transition-all cursor-pointer hover:border-rose-400 group relative overflow-hidden ${
+            isDarkMode ? 'bg-[#18191E] border-white/5' : 'bg-white border-gray-200 shadow-sm'
+          }`}
+        >
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-bold uppercase tracking-wider mb-1">
+                  <span>Early Warning System</span>
+                </div>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white group-hover:text-rose-500 transition-colors">
+                  AI At-Risk Student Detection
+                </h3>
+              </div>
+            </div>
+            <span className="px-3 py-1 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 font-black text-xs border border-rose-500/20">
+              {highRiskStudentsCount} High Risk
+            </span>
+          </div>
+
+          <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
+            Identifies students facing imminent cutoff disqualifications from lack of verified capstones, aptitude speed, or active backlogs before recruitment drives begin.
+          </p>
+
+          <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-white/5 text-xs">
+            <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400 font-medium">
+              <span>{needsImprovementCount} Needs Prep</span>
+              <span>•</span>
+              <span className="text-emerald-500 font-bold">{placementReadyStudents} Placement Ready</span>
+            </div>
+            <span className="text-rose-600 dark:text-rose-400 font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+              <span>View Interventions</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </span>
+          </div>
+        </div>
+
+        {/* AI Conflict-Free Drive Scheduler Card */}
+        <div
+          id="dashboard-scheduler-card"
+          onClick={() => onNavigateTab('scheduler')}
+          className={`p-6 rounded-3xl border transition-all cursor-pointer hover:border-purple-400 group relative overflow-hidden ${
+            isDarkMode ? 'bg-[#18191E] border-white/5' : 'bg-white border-gray-200 shadow-sm'
+          }`}
+        >
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-500 flex items-center justify-center">
+                <Calendar className="w-6 h-6 text-[#D4F73C]" />
+              </div>
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[10px] font-bold uppercase tracking-wider mb-1">
+                  <span>Algorithmic Optimization</span>
+                </div>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white group-hover:text-purple-400 transition-colors">
+                  AI Conflict-Free Drive Scheduler
+                </h3>
+              </div>
+            </div>
+            <span className="px-3 py-1 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-300 font-black text-xs border border-purple-500/20">
+              Active Engine
+            </span>
+          </div>
+
+          <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
+            Detects multi-company interview overlaps, computer lab venue bottlenecks, and candidate round exhaustion to recommend optimal conflict-free timetables.
+          </p>
+
+          <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-white/5 text-xs">
+            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-medium">
+              <Sparkles className="w-3.5 h-3.5 text-[#D4F73C]" />
+              <span>Multi-tenant slot clash protection</span>
+            </div>
+            <span className="text-purple-600 dark:text-purple-300 font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+              <span>Open Scheduler</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Row 2: Skill Readiness by Department + Placement Pipeline */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Department Skill Readiness Chart */}
@@ -339,10 +478,10 @@ export const InstitutionDashboardView: React.FC<InstitutionDashboardViewProps> =
               <p className="text-xs text-gray-400">Average student skill readiness score (%) per engineering branch</p>
             </div>
             <button
-              onClick={() => onNavigateTab('departments')}
+              onClick={() => onNavigateTab('skill-intelligence')}
               className="text-xs font-semibold text-blue-500 hover:text-blue-400 flex items-center gap-1 cursor-pointer"
             >
-              <span>View Departments</span>
+              <span>Skill Intelligence</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -495,7 +634,7 @@ export const InstitutionDashboardView: React.FC<InstitutionDashboardViewProps> =
               <span className="text-base font-black text-blue-500">₹{avgCtc} LPA</span>
             </div>
             <div className="p-2 rounded-xl bg-gray-50 dark:bg-white/5">
-              <span className="text-[10px] text-gray-400 block uppercase font-bold">Active MoUs</span>
+              <span className="text-[10px] text-gray-400 block uppercase font-bold">Partnerships</span>
               <span className="text-base font-black text-purple-500">{institutionCollaborations.length}</span>
             </div>
           </div>
@@ -682,7 +821,7 @@ export const InstitutionDashboardView: React.FC<InstitutionDashboardViewProps> =
                   </div>
                   <div>
                     <div className="text-xs font-bold">
-                      Corporate MoU Active: {c.industry}
+                      Corporate Partner Active: {c.industry}
                     </div>
                     <div className="text-[11px] text-gray-400">
                       {c.collaborationType} • {c.studentsInvolved || 45} Students Enrolled
@@ -691,7 +830,7 @@ export const InstitutionDashboardView: React.FC<InstitutionDashboardViewProps> =
                 </div>
                 <div className="text-right">
                   <span className="text-[10px] text-gray-400 block">{c.startDate}</span>
-                  <span className="text-[10px] font-bold text-blue-500 uppercase">Active MoU</span>
+                  <span className="text-[10px] font-bold text-blue-500 uppercase">Active Partner</span>
                 </div>
               </div>
             ))}
@@ -710,6 +849,18 @@ export const InstitutionDashboardView: React.FC<InstitutionDashboardViewProps> =
 
             <div className="space-y-2">
               <button
+                id="btn-institution-ai-copilot"
+                onClick={() => openAiChat('Summarize our institution placement readiness across departments and highlight any at-risk student cohorts before upcoming recruitment drives.')}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-xs font-bold text-purple-600 dark:text-purple-400 border border-purple-500/20 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Sparkles className="w-4 h-4 text-purple-500" />
+                  <span>Ask AI Placement Strategist</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-purple-400" />
+              </button>
+
+              <button
                 onClick={() => onNavigateTab('students')}
                 className="w-full flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-xs font-semibold transition-colors cursor-pointer"
               >
@@ -721,12 +872,67 @@ export const InstitutionDashboardView: React.FC<InstitutionDashboardViewProps> =
               </button>
 
               <button
-                onClick={() => onNavigateTab('faculty')}
+                onClick={() => onNavigateTab('placements')}
                 className="w-full flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-xs font-semibold transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-2.5">
-                  <GraduationCap className="w-4 h-4 text-purple-500" />
-                  <span>Faculty Engagements ({totalFaculty})</span>
+                  <TrendingUp className="w-4 h-4 text-emerald-500" />
+                  <span>Placement Drives & Offers</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+              </button>
+
+              <button
+                onClick={() => onNavigateTab('reports')}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-xs font-semibold transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <BarChart className="w-4 h-4 text-purple-500" />
+                  <span>Placement Analytics & CTC</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+              </button>
+
+              <button
+                onClick={() => onNavigateTab('recruiter-tracking')}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-xs font-semibold transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Building2 className="w-4 h-4 text-cyan-500" />
+                  <span>Recruiter Health & SPOC Index</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+              </button>
+
+              <button
+                onClick={() => onNavigateTab('hiring-trends')}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-xs font-semibold transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <TrendingUp className="w-4 h-4 text-purple-500" />
+                  <span>Company Hiring History & CTC</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+              </button>
+
+              <button
+                onClick={() => onNavigateTab('skill-mapping')}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-xs font-semibold transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Layers className="w-4 h-4 text-teal-500" />
+                  <span>Skill-to-Job & Company Matrix</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+              </button>
+
+              <button
+                onClick={() => onNavigateTab('feedback')}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-xs font-semibold transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <MessageSquare className="w-4 h-4 text-rose-500" />
+                  <span>Personal Interview & Placement Feedback</span>
                 </div>
                 <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
               </button>

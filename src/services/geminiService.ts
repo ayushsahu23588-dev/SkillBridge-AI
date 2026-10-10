@@ -410,11 +410,12 @@ export const geminiService = {
     query: string,
     role: string,
     history: { role: 'user' | 'assistant'; content: string }[] = [],
-    context?: any
+    context?: any,
+    options?: { taskComplexity?: 'fast' | 'general' | 'complex'; model?: string }
   ): Promise<string> {
     return executeAiRequest(
       '/chat-unified',
-      { message: query, role, history, context },
+      { message: query, role, history, context, ...options },
       () => aiFallbackService.askSkillBridgeAI(query, role, history, context)
     );
   },

@@ -32,6 +32,7 @@ export const SkillGapPage: React.FC = () => {
     setSelectedCareerRole,
     navigate,
     showToast,
+    openAiChat,
   } = useApp();
 
   const [activeTabRole, setActiveTabRole] = useState<string>(
@@ -136,6 +137,14 @@ export const SkillGapPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 shrink-0 flex-wrap">
+            <button
+              id="ask-ai-skill-gap-btn"
+              onClick={() => openAiChat(`What is the most effective weekly study schedule to close my biggest skill gaps for a ${activeTabRole} role?`)}
+              className="px-4 py-2.5 rounded-2xl bg-[#181920] text-white dark:bg-white/10 hover:bg-white/20 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer border border-white/10"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#D4F73C]" />
+              <span>Ask AI Copilot</span>
+            </button>
             <button
               id="retake-assessment-btn"
               onClick={() => navigate('/student/assessment')}

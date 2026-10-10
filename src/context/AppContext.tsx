@@ -51,7 +51,27 @@ import {
   AdminOpportunityItem,
   AdminApplicationItem,
   PlatformSettingsData,
+  DepartmentMetric,
+  CompanyHiringHistoryItem,
+  PlacementDriveCalendarEvent,
+  StudentVerifiableDocument,
+  StudentPlacementFeedback,
+  RecruiterEngagementMetric,
+  SkillCompanyMapping,
+  RoleBasedPrivacySecurityConfig,
+  EligibilityWaiverRequest,
 } from '../types';
+import {
+  INITIAL_DEPARTMENT_METRICS,
+  INITIAL_COMPANY_HIRING_HISTORY,
+  INITIAL_DRIVE_CALENDAR_EVENTS,
+  INITIAL_VERIFIABLE_DOCUMENTS,
+  INITIAL_STUDENT_FEEDBACK,
+  INITIAL_RECRUITER_ENGAGEMENT,
+  INITIAL_SKILL_COMPANY_MAPPINGS,
+  INITIAL_PRIVACY_SECURITY_CONFIG,
+  INITIAL_ELIGIBILITY_WAIVERS,
+} from '../data/placementPracticalFeaturesData';
 import { SupabaseDataService } from '../services/supabaseDataService';
 import {
   INITIAL_USERS,
@@ -357,6 +377,34 @@ interface AppContextType {
   platformSettings: PlatformSettingsData;
   updatePlatformSettings: (updates: Partial<PlatformSettingsData>) => void;
   resetPlatformDemoData: () => void;
+
+  // Final Practical Placement Features
+  departmentMetrics: DepartmentMetric[];
+  companyHiringHistory: CompanyHiringHistoryItem[];
+  driveCalendarEvents: PlacementDriveCalendarEvent[];
+  addDriveCalendarEvent: (event: Omit<PlacementDriveCalendarEvent, 'id' | 'totalRegistered'>) => void;
+  verifiableDocuments: StudentVerifiableDocument[];
+  verifyDocument: (docId: string, remarks?: string) => void;
+  requestDocumentRevision: (docId: string, remarks: string) => void;
+  studentFeedbackList: StudentPlacementFeedback[];
+  addStudentFeedback: (feedback: Omit<StudentPlacementFeedback, 'id' | 'submittedAt' | 'upvotesCount'>) => void;
+  upvoteStudentFeedback: (feedbackId: string) => void;
+  recruiterEngagements: RecruiterEngagementMetric[];
+  updateRecruiterEngagement: (companyId: string, updates: Partial<RecruiterEngagementMetric>) => void;
+  skillCompanyMappings: SkillCompanyMapping[];
+  privacySecurityConfig: RoleBasedPrivacySecurityConfig;
+  updatePrivacySecurityConfig: (updates: Partial<RoleBasedPrivacySecurityConfig>) => void;
+  eligibilityWaivers: EligibilityWaiverRequest[];
+  submitEligibilityWaiver: (req: Omit<EligibilityWaiverRequest, 'id' | 'requestedAt' | 'status'>) => void;
+  updateEligibilityWaiverStatus: (waiverId: string, status: 'Approved' | 'Rejected', notes?: string) => void;
+
+  // AI Chatbot Interface
+  isAiChatOpen: boolean;
+  setIsAiChatOpen: (open: boolean) => void;
+  initialChatPrompt: string;
+  openAiChat: (prompt?: string) => void;
+  closeAiChat: () => void;
+  clearInitialChatPrompt: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -754,6 +802,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [themeMode]);
 
+  // AI Chatbot State
+  const [isAiChatOpen, setIsAiChatOpen] = useState(false);
+  const [initialChatPrompt, setInitialChatPrompt] = useState('');
+
+  const openAiChat = (prompt?: string) => {
+    if (prompt) setInitialChatPrompt(prompt);
+    setIsAiChatOpen(true);
+  };
+
+  const closeAiChat = () => {
+    setIsAiChatOpen(false);
+    setInitialChatPrompt('');
+  };
+
+  const clearInitialChatPrompt = () => {
+    setInitialChatPrompt('');
+  };
+
   // Cached state restore
   const getCachedState = () => {
     try {
@@ -919,6 +985,78 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch {}
     return INITIAL_PLATFORM_SETTINGS;
   });
+
+  // Final Practical Placement Features States
+  const [departmentMetrics, setDepartmentMetrics] = useState<DepartmentMetric[]>(INITIAL_DEPARTMENT_METRICS);
+  const [companyHiringHistory, setCompanyHiringHistory] = useState<CompanyHiringHistoryItem[]>(INITIAL_COMPANY_HIRING_HISTORY);
+  
+  const [driveCalendarEvents, setDriveCalendarEvents] = useState<PlacementDriveCalendarEvent[]>(() => {
+    try {
+      const raw = localStorage.getItem('skillbridge_drive_calendar_events');
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return INITIAL_DRIVE_CALENDAR_EVENTS;
+  });
+
+  const [verifiableDocuments, setVerifiableDocuments] = useState<StudentVerifiableDocument[]>(() => {
+    try {
+      const raw = localStorage.getItem('skillbridge_verifiable_documents');
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return INITIAL_VERIFIABLE_DOCUMENTS;
+  });
+
+  const [studentFeedbackList, setStudentFeedbackList] = useState<StudentPlacementFeedback[]>(() => {
+    try {
+      const raw = localStorage.getItem('skillbridge_student_feedback');
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return INITIAL_STUDENT_FEEDBACK;
+  });
+
+  const [recruiterEngagements, setRecruiterEngagements] = useState<RecruiterEngagementMetric[]>(() => {
+    try {
+      const raw = localStorage.getItem('skillbridge_recruiter_engagements');
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return INITIAL_RECRUITER_ENGAGEMENT;
+  });
+
+  const [skillCompanyMappings, setSkillCompanyMappings] = useState<SkillCompanyMapping[]>(INITIAL_SKILL_COMPANY_MAPPINGS);
+
+  const [privacySecurityConfig, setPrivacySecurityConfig] = useState<RoleBasedPrivacySecurityConfig>(() => {
+    try {
+      const raw = localStorage.getItem('skillbridge_privacy_security_config');
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return INITIAL_PRIVACY_SECURITY_CONFIG;
+  });
+
+  const [eligibilityWaivers, setEligibilityWaivers] = useState<EligibilityWaiverRequest[]>(() => {
+    try {
+      const raw = localStorage.getItem('skillbridge_eligibility_waivers');
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return INITIAL_ELIGIBILITY_WAIVERS;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('skillbridge_drive_calendar_events', JSON.stringify(driveCalendarEvents));
+      localStorage.setItem('skillbridge_verifiable_documents', JSON.stringify(verifiableDocuments));
+      localStorage.setItem('skillbridge_student_feedback', JSON.stringify(studentFeedbackList));
+      localStorage.setItem('skillbridge_recruiter_engagements', JSON.stringify(recruiterEngagements));
+      localStorage.setItem('skillbridge_privacy_security_config', JSON.stringify(privacySecurityConfig));
+      localStorage.setItem('skillbridge_eligibility_waivers', JSON.stringify(eligibilityWaivers));
+    } catch {}
+  }, [
+    driveCalendarEvents,
+    verifiableDocuments,
+    studentFeedbackList,
+    recruiterEngagements,
+    privacySecurityConfig,
+    eligibilityWaivers,
+  ]);
 
   useEffect(() => {
     try {
@@ -2765,6 +2903,121 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     addAuditLog('Triggered system-wide demo data reset to factory initial state', 'Warning');
   };
 
+  // Final Practical Placement Features Handlers
+  const addDriveCalendarEvent = (event: Omit<PlacementDriveCalendarEvent, 'id' | 'totalRegistered'>) => {
+    const newEvent: PlacementDriveCalendarEvent = {
+      ...event,
+      id: `evt_${Date.now()}`,
+      totalRegistered: 0,
+    };
+    setDriveCalendarEvents((prev) => [newEvent, ...prev]);
+    showToast(`Drive event for ${newEvent.companyName} scheduled successfully!`, 'success');
+    addAuditLog(`Placement Cell scheduled drive event "${newEvent.roleTitle}" for ${newEvent.companyName}`);
+  };
+
+  const verifyDocument = (docId: string, remarks?: string) => {
+    setVerifiableDocuments((prev) =>
+      prev.map((doc) =>
+        doc.id === docId
+          ? {
+              ...doc,
+              status: 'Verified',
+              verifiedBy: currentUser.name || 'Placement Verification Officer',
+              verifiedAt: new Date().toISOString().slice(0, 10),
+              remarks: remarks || 'Document verified and authenticity confirmed.',
+            }
+          : doc
+      )
+    );
+    showToast('Document verified and badge awarded!', 'success');
+    addAuditLog(`Verified student document ${docId}`);
+  };
+
+  const requestDocumentRevision = (docId: string, remarks: string) => {
+    setVerifiableDocuments((prev) =>
+      prev.map((doc) =>
+        doc.id === docId
+          ? {
+              ...doc,
+              status: 'Revision Requested',
+              remarks,
+            }
+          : doc
+      )
+    );
+    showToast('Revision request sent to student.', 'info');
+    addAuditLog(`Requested document revision for ${docId}: ${remarks}`);
+  };
+
+  const addStudentFeedback = (feedback: Omit<StudentPlacementFeedback, 'id' | 'submittedAt' | 'upvotesCount'>) => {
+    const newFb: StudentPlacementFeedback = {
+      ...feedback,
+      id: `fb_${Date.now()}`,
+      submittedAt: new Date().toISOString().slice(0, 10),
+      upvotesCount: 1,
+    };
+    setStudentFeedbackList((prev) => [newFb, ...prev]);
+    showToast('Interview experience & feedback shared with the student community!', 'success');
+    addAuditLog(`Student submitted interview feedback for ${newFb.companyName}`);
+  };
+
+  const upvoteStudentFeedback = (feedbackId: string) => {
+    setStudentFeedbackList((prev) =>
+      prev.map((fb) => (fb.id === feedbackId ? { ...fb, upvotesCount: fb.upvotesCount + 1 } : fb))
+    );
+  };
+
+  const updateRecruiterEngagement = (companyId: string, updates: Partial<RecruiterEngagementMetric>) => {
+    setRecruiterEngagements((prev) =>
+      prev.map((item) => (item.companyId === companyId ? { ...item, ...updates } : item))
+    );
+    showToast('Recruiter engagement record updated.', 'success');
+  };
+
+  const updatePrivacySecurityConfig = (updates: Partial<RoleBasedPrivacySecurityConfig>) => {
+    setPrivacySecurityConfig((prev) => {
+      const updated = {
+        ...prev,
+        ...updates,
+        studentPrivacy: { ...prev.studentPrivacy, ...updates.studentPrivacy },
+        recruiterSecurity: { ...prev.recruiterSecurity, ...updates.recruiterSecurity },
+        placementCellAudit: { ...prev.placementCellAudit, ...updates.placementCellAudit },
+      };
+      return updated;
+    });
+    showToast('Security & privacy policies updated.', 'success');
+    addAuditLog('Modified role-based privacy and security policy parameters');
+  };
+
+  const submitEligibilityWaiver = (req: Omit<EligibilityWaiverRequest, 'id' | 'requestedAt' | 'status'>) => {
+    const newWaiver: EligibilityWaiverRequest = {
+      ...req,
+      id: `waiver_${Date.now()}`,
+      requestedAt: new Date().toISOString(),
+      status: 'Pending',
+    };
+    setEligibilityWaivers((prev) => [newWaiver, ...prev]);
+    showToast('Eligibility waiver application submitted to Placement Cell!', 'success');
+    addAuditLog(`Student ${req.studentName} requested eligibility waiver for ${req.companyName}`);
+  };
+
+  const updateEligibilityWaiverStatus = (waiverId: string, status: 'Approved' | 'Rejected', notes?: string) => {
+    setEligibilityWaivers((prev) =>
+      prev.map((w) =>
+        w.id === waiverId
+          ? {
+              ...w,
+              status,
+              decisionNotes: notes,
+              decidedBy: currentUser.name || 'Dean of Placements',
+            }
+          : w
+      )
+    );
+    showToast(`Eligibility waiver ${status.toLowerCase()}!`, status === 'Approved' ? 'success' : 'info');
+    addAuditLog(`Placement cell ${status.toLowerCase()} waiver ${waiverId}`);
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -2953,6 +3206,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         platformSettings,
         updatePlatformSettings,
         resetPlatformDemoData,
+
+        // Final Practical Placement Features
+        departmentMetrics,
+        companyHiringHistory,
+        driveCalendarEvents,
+        addDriveCalendarEvent,
+        verifiableDocuments,
+        verifyDocument,
+        requestDocumentRevision,
+        studentFeedbackList,
+        addStudentFeedback,
+        upvoteStudentFeedback,
+        recruiterEngagements,
+        updateRecruiterEngagement,
+        skillCompanyMappings,
+        privacySecurityConfig,
+        updatePrivacySecurityConfig,
+        eligibilityWaivers,
+        submitEligibilityWaiver,
+        updateEligibilityWaiverStatus,
+
+        // AI Chatbot
+        isAiChatOpen,
+        setIsAiChatOpen,
+        initialChatPrompt,
+        openAiChat,
+        closeAiChat,
+        clearInitialChatPrompt,
       }}
     >
       {children}

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
+import { PlacementDriveDetailsModal } from '../common/PlacementDriveDetailsModal';
 import {
   Briefcase,
   Search,
@@ -24,6 +25,7 @@ export const InstitutionInternshipsView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [selectedInternship, setSelectedInternship] = useState<any | null>(null);
+  const [isDriveModalOpen, setIsDriveModalOpen] = useState(false);
 
   // Filter only internships
   const allInternships = useMemo(() => {
@@ -285,7 +287,13 @@ export const InstitutionInternshipsView: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-6 pt-3 border-t border-gray-100 dark:border-white/10 flex justify-end gap-2">
+            <div className="mt-6 pt-3 border-t border-gray-100 dark:border-white/10 flex justify-end gap-2 flex-wrap">
+              <button
+                onClick={() => setIsDriveModalOpen(true)}
+                className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold cursor-pointer"
+              >
+                Placement Drive Details
+              </button>
               <button
                 onClick={() => setSelectedInternship(null)}
                 className="px-4 py-2 rounded-xl bg-gray-200 dark:bg-white/10 text-xs font-semibold cursor-pointer"
@@ -304,6 +312,15 @@ export const InstitutionInternshipsView: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Shared Placement Drive Details Modal */}
+      {isDriveModalOpen && selectedInternship && (
+        <PlacementDriveDetailsModal
+          isOpen={true}
+          drive={selectedInternship}
+          onClose={() => setIsDriveModalOpen(false)}
+        />
       )}
     </div>
   );

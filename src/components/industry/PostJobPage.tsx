@@ -176,7 +176,7 @@ export const PostJobPage: React.FC = () => {
         className="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
       >
         <ArrowLeft className="w-4 h-4" />
-        <span>Back to Industry Dashboard</span>
+        <span>Back to Recruiter Dashboard</span>
       </button>
 
       {/* Header Banner */}

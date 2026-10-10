@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { InstitutionPlacementItem } from '../../types';
+import { DriveSchedulerPanel } from './DriveSchedulerPanel';
 import {
   TrendingUp,
   Search,
@@ -38,6 +39,7 @@ export const InstitutionPlacementsView: React.FC<InstitutionPlacementsViewProps>
   const [searchQuery, setSearchQuery] = useState('');
   const [deptFilter, setDeptFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [activeSubTab, setActiveSubTab] = useState<'registry' | 'scheduler'>('registry');
 
   // Compute metrics
   const totalOffers = institutionPlacements.length;
@@ -134,7 +136,36 @@ export const InstitutionPlacementsView: React.FC<InstitutionPlacementsViewProps>
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* Sub-tab Navigation */}
+      <div className="flex items-center gap-2 border-b border-gray-200 dark:border-white/10 pb-2">
+        <button
+          onClick={() => setActiveSubTab('registry')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeSubTab === 'registry'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
+          }`}
+        >
+          Offers & Placement Registry ({institutionPlacements.length})
+        </button>
+        <button
+          onClick={() => setActiveSubTab('scheduler')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+            activeSubTab === 'scheduler'
+              ? 'bg-purple-600 text-white shadow-sm'
+              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
+          }`}
+        >
+          <Sparkles className="w-3.5 h-3.5 text-[#D4F73C]" />
+          <span>AI Conflict-Free Drive Scheduler</span>
+        </button>
+      </div>
+
+      {activeSubTab === 'scheduler' ? (
+        <DriveSchedulerPanel />
+      ) : (
+        <>
+          {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div
           className={`p-4 rounded-2xl border transition-all ${
@@ -336,6 +367,8 @@ export const InstitutionPlacementsView: React.FC<InstitutionPlacementsViewProps>
           </table>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 };

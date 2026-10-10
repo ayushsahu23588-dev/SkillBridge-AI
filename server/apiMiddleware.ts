@@ -11,6 +11,7 @@ import {
   calculateCandidateMatchAI,
   generateResumeSuggestionsAI,
   chatWithCareerAdvisorAI,
+  chatWithGeminiMultiTurn,
   getGeminiClient,
 } from './gemini';
 import { getDatabaseStatus } from './db/connection';
@@ -706,10 +707,49 @@ export function createApiMiddleware() {
           return sendJson(res, 200, { success: true, data: suggestions });
         }
 
-        if (url === '/api/ai/chat') {
-          const { messages = [], studentContext = null } = body;
-          const reply = await chatWithCareerAdvisorAI(messages, studentContext);
-          return sendJson(res, 200, { success: true, message: reply });
+        if (url === '/api/ai/chat' || url === '/api/ai/chat-unified') {
+          // Normalize message payloads (supports messages array, history + message, or direct query)
+          let chatMessages = body.messages || [];
+          if (!chatMessages.length && body.message) {
+            chatMessages = [{ role: 'user', content: body.message }];
+          }
+          if (body.history && Array.isArray(body.history)) {
+            const historyMsgs = body.history.map((h: any) => ({
+              role: h.role === 'user' ? 'user' : 'assistant',
+              content: h.content,
+            }));
+            if (body.message) {
+              chatMessages = [...historyMsgs, { role: 'user', content: body.message }];
+            } else if (!chatMessages.length) {
+              chatMessages = historyMsgs;
+            }
+          }
+
+          const {
+            role = 'student',
+            taskComplexity = 'general',
+            model,
+            studentContext,
+            context,
+          } = body;
+
+          const result = await chatWithGeminiMultiTurn(chatMessages, {
+            role,
+            taskComplexity,
+            model,
+            studentContext:
+              studentContext ||
+              context?.studentProfile ||
+              (role === 'student' ? inMemoryDb.getStudentProfile() : null),
+            context,
+          });
+
+          return sendJson(res, 200, {
+            success: true,
+            message: result.text,
+            result: result.text,
+            modelUsed: result.modelUsed,
+          });
         }
       }
 

@@ -97,12 +97,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       defaultEmail: 'alex.morgan@university.edu',
     },
     {
-      role: 'faculty',
-      label: 'Faculty',
-      icon: <BookOpen className="w-4 h-4" />,
-      defaultEmail: 's.jenkins@university.edu',
-    },
-    {
       role: 'company',
       label: 'Recruiter',
       icon: <Briefcase className="w-4 h-4" />,
@@ -110,15 +104,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     },
     {
       role: 'college_admin',
-      label: 'College Admin',
+      label: 'Placement Cell',
       icon: <Building2 className="w-4 h-4" />,
       defaultEmail: 'arthur.p@university.edu',
-    },
-    {
-      role: 'super_admin',
-      label: 'Super Admin',
-      icon: <ShieldCheck className="w-4 h-4" />,
-      defaultEmail: 'root@edubridge.ai',
     },
   ];
 
@@ -201,15 +189,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const handleGoogleSignIn = async () => {
     setErrorMsg(null);
     try {
-      const simulatedGoogleUsers = {
+      const simulatedGoogleUsers: Record<string, { email: string; name: string; avatar: string }> = {
         student: { email: 'student.google@university.edu', name: 'Jordan Hayes', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80' },
-        faculty: { email: 'faculty.google@university.edu', name: 'Prof. Elena Rostova', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80' },
         company: { email: 'recruiter.google@techcorp.com', name: 'Samantha Reed', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80' },
-        college_admin: { email: 'admin.google@university.edu', name: 'Dean Robert Sterling', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80' },
-        super_admin: { email: 'root.google@edubridge.ai', name: 'Master Administrator', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80' },
+        college_admin: { email: 'placement.google@university.edu', name: 'Arthur Pendelton (TPO)', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80' },
       };
 
-      const profile = simulatedGoogleUsers[selectedRole];
+      const profile = simulatedGoogleUsers[selectedRole] || simulatedGoogleUsers.student;
       await loginWithGoogle({
         email: profile.email,
         name: profile.name,
@@ -327,11 +313,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gradient-to-r from-blue-50/50 via-white to-indigo-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-black text-lg shadow-md shadow-blue-500/20">
-              EB
+              SB
             </div>
             <div>
               <h3 className="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
-                EduBridge<span className="text-blue-600 dark:text-blue-400">AI</span>
+                SkillBridge<span className="text-blue-600 dark:text-blue-400">AI</span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
                   RBAC Gate
                 </span>
@@ -367,7 +353,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   One-Click Demo Roles
                 </span>
               </div>
-              <div className="grid grid-cols-5 gap-1.5 p-1 bg-gray-100 dark:bg-gray-800 rounded-2xl">
+              <div className="grid grid-cols-3 gap-1.5 p-1 bg-gray-100 dark:bg-gray-800 rounded-2xl">
                 {roleOptions.map((item) => {
                   const isSelected = selectedRole === item.role;
                   return (

@@ -31,6 +31,11 @@ import {
   GraduationCap,
   Building2,
   Bell,
+  Activity,
+  Zap,
+  Scale,
+  MessageSquare,
+  Clock,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -49,20 +54,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectAiChat, onOpenNotifica
     notifications,
     setIsMobileMenuOpen,
     showToast,
+    openAiChat,
   } = useApp();
   const { logout } = useAuth();
 
   const effectiveRole =
-    currentPath.startsWith('/faculty')
-      ? 'faculty'
-      : currentPath.startsWith('/industry')
+    currentPath.startsWith('/industry') || currentPath.startsWith('/recruiter')
       ? 'company'
-      : currentPath.startsWith('/institution')
+      : currentPath.startsWith('/institution') || currentPath.startsWith('/placement-cell')
       ? 'college_admin'
       : currentPath.startsWith('/admin')
       ? 'super_admin'
       : currentPath.startsWith('/student')
       ? 'student'
+      : currentUser.role === 'faculty'
+      ? 'college_admin'
       : currentUser.role;
 
   const role = effectiveRole;
@@ -84,69 +90,60 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectAiChat, onOpenNotifica
 
   if (role === 'student') {
     menuItems = [
-      { id: 'dashboard', path: '/student/dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
+      { id: 'dashboard', path: '/student/dashboard', label: 'Student Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
+      { id: 'calendar', path: '/student/drive-calendar', label: 'Drive Calendar', icon: <Calendar className="w-4 h-4" />, aiHighlight: true },
       { id: 'assessment', path: '/student/assessment', label: 'Skill Assessment', icon: <Target className="w-4 h-4" />, aiHighlight: true },
       { id: 'skills', path: '/student/skills', label: 'My Skills', icon: <Award className="w-4 h-4" /> },
       { id: 'skill_gap', path: '/student/skill-gap', label: 'Skill Gap Analysis', icon: <BarChart3 className="w-4 h-4" />, aiHighlight: true },
-      { id: 'roadmap', path: '/student/roadmap', label: 'Career Roadmap', icon: <Compass className="w-4 h-4" />, aiHighlight: true },
+      { id: 'simulator', path: '/student/simulator', label: 'What-If Simulator', icon: <Zap className="w-4 h-4" />, aiHighlight: true },
+      { id: 'skill_mapping', path: '/student/skill-mapping', label: 'Skill-to-Job Matrix', icon: <Layers className="w-4 h-4" />, aiHighlight: true },
+      { id: 'roadmap', path: '/student/roadmap', label: 'Career Roadmap', icon: <Compass className="w-4 h-4" /> },
       { id: 'internships', path: '/student/internships', label: 'Internships', icon: <Briefcase className="w-4 h-4" /> },
-      { id: 'jobs', path: '/student/jobs', label: 'Graduate Jobs', icon: <Briefcase className="w-4 h-4" /> },
+      { id: 'jobs', path: '/student/jobs', label: 'Graduate Jobs & Drives', icon: <Briefcase className="w-4 h-4" /> },
       { id: 'applications', path: '/student/applications', label: 'Applications', icon: <CheckCircle className="w-4 h-4" />, badge: pendingApps > 0 ? pendingApps : undefined },
+      { id: 'feedback', path: '/student/interview-feedback', label: 'Personal Interview Feedback', icon: <Sparkles className="w-4 h-4" /> },
+      { id: 'documents', path: '/student/documents', label: 'Verify Documents', icon: <ShieldCheck className="w-4 h-4" /> },
       { id: 'portfolio', path: '/student/portfolio', label: 'Digital Portfolio', icon: <UserIcon className="w-4 h-4" /> },
       { id: 'resume_studio', path: '/student/resume-studio', label: 'AI Resume Studio', icon: <FileText className="w-4 h-4" />, aiHighlight: true },
-      { id: 'interview_prep', path: '/student/interview-prep', label: 'AI Interview Prep', icon: <Sparkles className="w-4 h-4" />, aiHighlight: true },
+      { id: 'interview_prep', path: '/student/interview-prep', label: 'AI Interview Prep', icon: <Bot className="w-4 h-4" />, aiHighlight: true },
       { id: 'settings', path: '/student/settings', label: 'Settings', icon: <Settings className="w-4 h-4" /> },
     ];
-  } else if (role === 'faculty') {
-    menuItems = [
-      { id: 'dashboard', path: '/faculty/dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
-      { id: 'internships', path: '/faculty/internships', label: 'Internships', icon: <Briefcase className="w-4 h-4" /> },
-      { id: 'industrial_training', path: '/faculty/industrial-training', label: 'Industrial Training', icon: <BookOpen className="w-4 h-4" /> },
-      { id: 'fdps', path: '/faculty/fdps', label: 'FDPs', icon: <Award className="w-4 h-4" /> },
-      { id: 'consultancy', path: '/faculty/consultancy', label: 'Consultancy', icon: <Building className="w-4 h-4" /> },
-      { id: 'research', path: '/faculty/research', label: 'Research Collaboration', icon: <FlaskConical className="w-4 h-4" />, aiHighlight: true },
-      { id: 'workshops', path: '/faculty/workshops', label: 'Workshops', icon: <Calendar className="w-4 h-4" /> },
-      { id: 'guest_lectures', path: '/faculty/guest-lectures', label: 'Guest Lectures', icon: <Sparkles className="w-4 h-4" /> },
-      { id: 'projects', path: '/faculty/projects', label: 'Projects', icon: <Target className="w-4 h-4" /> },
-      { id: 'mentorship', path: '/faculty/mentorship', label: 'Mentorship', icon: <Users className="w-4 h-4" /> },
-      { id: 'profile', path: '/faculty/profile', label: 'Profile', icon: <UserIcon className="w-4 h-4" /> },
-      { id: 'settings', path: '/faculty/settings', label: 'Settings', icon: <Settings className="w-4 h-4" /> },
-    ];
   } else if (role === 'company') {
+    // Recruiter Portal (Merged Post Job + Post Internship + Post Project into Create Drive / Opportunity)
     menuItems = [
-      { id: 'dashboard', path: '/industry/dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
-      { id: 'post_internship', path: '/industry/post-internship', label: 'Post Internship', icon: <PlusCircle className="w-4 h-4" /> },
-      { id: 'post_job', path: '/industry/post-job', label: 'Post Job', icon: <Briefcase className="w-4 h-4" /> },
-      { id: 'post_project', path: '/industry/post-project', label: 'Post Project', icon: <Target className="w-4 h-4" /> },
-      { id: 'manage_opportunities', path: '/industry/opportunities', label: 'Manage Opportunities', icon: <Layers className="w-4 h-4" /> },
-      { id: 'candidates', path: '/industry/candidates', label: 'Candidate Matching', icon: <Sparkles className="w-4 h-4" />, aiHighlight: true },
+      { id: 'dashboard', path: '/industry/dashboard', label: 'Recruiter Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
+      { id: 'create_drive', path: '/industry/post-opportunity', label: 'Create Drive / Opportunity', icon: <PlusCircle className="w-4 h-4" />, aiHighlight: true },
+      { id: 'manage_opportunities', path: '/industry/opportunities', label: 'Drives & Openings', icon: <Layers className="w-4 h-4" /> },
+      { id: 'calendar', path: '/industry/calendar', label: 'Campus Drive Calendar', icon: <Calendar className="w-4 h-4" /> },
+      { id: 'candidates', path: '/industry/candidates', label: 'AI Candidate Matching', icon: <Sparkles className="w-4 h-4" />, aiHighlight: true },
       { id: 'shortlisted', path: '/industry/shortlisted', label: 'Shortlisted Candidates', icon: <CheckCircle className="w-4 h-4" /> },
-      { id: 'applications', path: '/industry/applications', label: 'Applications', icon: <FileText className="w-4 h-4" /> },
-      { id: 'mentorship', path: '/industry/mentorship', label: 'Mentorship', icon: <Calendar className="w-4 h-4" /> },
-      { id: 'workshops', path: '/industry/workshops', label: 'Workshops', icon: <Award className="w-4 h-4" /> },
-      { id: 'profile', path: '/industry/profile', label: 'Profile', icon: <Building className="w-4 h-4" /> },
+      { id: 'applications', path: '/industry/applications', label: 'Applications & Pipeline', icon: <FileText className="w-4 h-4" /> },
+      { id: 'verification', path: '/industry/verification', label: 'Candidate Credentials', icon: <ShieldCheck className="w-4 h-4" /> },
+      { id: 'profile', path: '/industry/profile', label: 'Recruiter Profile', icon: <Building className="w-4 h-4" /> },
       { id: 'settings', path: '/industry/settings', label: 'Settings', icon: <Settings className="w-4 h-4" /> },
     ];
   } else if (role === 'college_admin') {
+    // Placement Cell Portal (Focused purely on placement operations, students, and hiring partners)
     menuItems = [
-      { id: 'dashboard', path: '/institution/dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
-      { id: 'students', path: '/institution/students', label: 'Students', icon: <Users className="w-4 h-4" /> },
-      { id: 'faculty', path: '/institution/faculty', label: 'Faculty', icon: <GraduationCap className="w-4 h-4" /> },
-      { id: 'industries', path: '/institution/industries', label: 'Industries', icon: <Building className="w-4 h-4" /> },
-      { id: 'departments', path: '/institution/departments', label: 'Departments', icon: <Layers className="w-4 h-4" /> },
-      { id: 'skill_intelligence', path: '/institution/skill-intelligence', label: 'Skill Intelligence', icon: <Award className="w-4 h-4" />, aiHighlight: true },
-      { id: 'internships', path: '/institution/internships', label: 'Internships', icon: <Briefcase className="w-4 h-4" /> },
-      { id: 'placements', path: '/institution/placements', label: 'Placements', icon: <TrendingUp className="w-4 h-4" /> },
-      { id: 'training', path: '/institution/training', label: 'Training & Development', icon: <BookOpen className="w-4 h-4" /> },
-      { id: 'collaborations', path: '/institution/collaborations', label: 'Industry Collaboration', icon: <Building2 className="w-4 h-4" /> },
-      { id: 'reports', path: '/institution/reports', label: 'Reports & Analytics', icon: <FileText className="w-4 h-4" /> },
-      { id: 'notifications', path: '/institution/notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" /> },
-      { id: 'profile', path: '/institution/profile', label: 'College Profile', icon: <Building2 className="w-4 h-4" /> },
-      { id: 'settings', path: '/institution/settings', label: 'Settings', icon: <Settings className="w-4 h-4" /> },
+      { id: 'dashboard', path: '/institution/dashboard', label: 'Placement Cell Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
+      { id: 'comparison', path: '/institution/comparison', label: 'Branch Comparison', icon: <Scale className="w-4 h-4" />, aiHighlight: true },
+      { id: 'calendar', path: '/institution/calendar', label: 'Drive Calendar', icon: <Calendar className="w-4 h-4" />, aiHighlight: true },
+      { id: 'at_risk', path: '/institution/at-risk', label: 'At-Risk Student Detection', icon: <AlertTriangle className="w-4 h-4" />, aiHighlight: true },
+      { id: 'scheduler', path: '/institution/scheduler', label: 'Conflict-Free Scheduler', icon: <Clock className="w-4 h-4" />, aiHighlight: true },
+      { id: 'placements', path: '/institution/placements', label: 'Placement Drives & Offers', icon: <TrendingUp className="w-4 h-4" /> },
+      { id: 'verification', path: '/institution/verification', label: 'Verify Documents', icon: <ShieldCheck className="w-4 h-4" /> },
+      { id: 'recruiter_tracking', path: '/institution/recruiter-tracking', label: 'Recruiter Health Index', icon: <Building className="w-4 h-4" /> },
+      { id: 'skill_mapping', path: '/institution/skill-mapping', label: 'Skill-to-Job Matrix', icon: <Layers className="w-4 h-4" /> },
+      { id: 'feedback', path: '/institution/feedback', label: 'Structured Placement Feedback', icon: <MessageSquare className="w-4 h-4" /> },
+      { id: 'reports', path: '/institution/reports', label: 'Placement Analytics', icon: <BarChart3 className="w-4 h-4" />, aiHighlight: true },
+      { id: 'students', path: '/institution/students', label: 'Student Directory', icon: <Users className="w-4 h-4" /> },
+      { id: 'industries', path: '/institution/industries', label: 'Recruiter Partners', icon: <Building2 className="w-4 h-4" /> },
+      { id: 'settings', path: '/institution/settings', label: 'Placement Cell Settings', icon: <Settings className="w-4 h-4" /> },
     ];
   } else if (role === 'super_admin') {
     menuItems = [
       { id: 'dashboard', path: '/admin/dashboard', label: 'Admin Overview', icon: <LayoutDashboard className="w-4 h-4" /> },
+      { id: 'metrics', path: '/admin/metrics', label: 'Performance Metrics', icon: <Activity className="w-4 h-4" />, aiHighlight: true },
       { id: 'users', path: '/admin/users', label: 'User Directory', icon: <Users className="w-4 h-4" /> },
       { id: 'opportunities', path: '/admin/opportunities', label: 'Opportunity Moderation', icon: <Briefcase className="w-4 h-4" /> },
       { id: 'applications', path: '/admin/applications', label: 'Application Oversight', icon: <FileText className="w-4 h-4" /> },
@@ -168,9 +165,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectAiChat, onOpenNotifica
     if (item.id === 'dashboard') {
       if (currentPath.endsWith('/dashboard')) return true;
       if (role === 'student' && (currentPath === '/student' || currentPath === '/student/')) return true;
-      if (role === 'faculty' && (currentPath === '/faculty' || currentPath === '/faculty/')) return true;
-      if (role === 'company' && (currentPath === '/industry' || currentPath === '/industry/')) return true;
-      if (role === 'college_admin' && (currentPath === '/institution' || currentPath === '/institution/')) return true;
+      if (role === 'company' && (currentPath === '/industry' || currentPath === '/industry/' || currentPath === '/recruiter')) return true;
+      if (role === 'college_admin' && (currentPath === '/institution' || currentPath === '/institution/' || currentPath === '/placement-cell')) return true;
       if (role === 'super_admin' && (currentPath === '/admin' || currentPath === '/admin/')) return true;
       return false;
     }
@@ -188,37 +184,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectAiChat, onOpenNotifica
       return true;
     }
     if (
-      item.id === 'workshops' &&
-      role === 'company' &&
-      (currentPath.includes('/workshops') || currentPath.includes('/challenges'))
-    ) {
-      return true;
-    }
-    if (
       item.id === 'skill_intelligence' &&
       role === 'college_admin' &&
       (currentPath.includes('/skills') || currentPath.includes('/skill-gaps') || currentPath.includes('/industry-demand'))
-    ) {
-      return true;
-    }
-    if (
-      item.id === 'workshops' &&
-      role === 'faculty' &&
-      (currentPath.includes('/workshops') || currentPath.includes('/guest-lectures'))
-    ) {
-      return true;
-    }
-    if (
-      item.id === 'projects' &&
-      role === 'faculty' &&
-      (currentPath.includes('/projects') || currentPath.includes('/mentorship'))
-    ) {
-      return true;
-    }
-    if (
-      item.id === 'profile' &&
-      role === 'faculty' &&
-      (currentPath.includes('/profile') || currentPath.includes('/settings'))
     ) {
       return true;
     }
@@ -248,11 +216,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectAiChat, onOpenNotifica
               </div>
               <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
                 {role === 'company'
-                  ? 'Industry Portal'
-                  : role === 'faculty'
-                  ? 'Faculty Portal'
+                  ? 'Recruiter Portal'
                   : role === 'college_admin'
-                  ? 'Institution Portal'
+                  ? 'Placement Cell Portal'
                   : role === 'super_admin'
                   ? 'Platform Admin'
                   : 'Student Portal'}
@@ -349,7 +315,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectAiChat, onOpenNotifica
             <button
               onClick={() => {
                 setIsMobileMenuOpen(false);
-                onSelectAiChat?.();
+                if (onSelectAiChat) onSelectAiChat();
+                else openAiChat();
               }}
               className="p-1 rounded-full hover:bg-white/10 text-gray-300 cursor-pointer"
             >
@@ -359,7 +326,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectAiChat, onOpenNotifica
           <button
             onClick={() => {
               setIsMobileMenuOpen(false);
-              onSelectAiChat?.();
+              if (onSelectAiChat) onSelectAiChat();
+              else openAiChat();
             }}
             className="w-full mt-2.5 py-1.5 rounded-xl bg-[#D4F73C] text-[#111216] text-[11px] font-bold hover:bg-[#c6ea31] transition-all cursor-pointer flex items-center justify-center gap-1"
           >

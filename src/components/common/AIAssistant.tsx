@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Bot } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { AIChatPanel } from './AIChatPanel';
 import { aiCacheService } from '../../services/aiCacheService';
+import { useApp } from '../../context/AppContext';
 
 export const AIAssistant: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isAiChatOpen, openAiChat, closeAiChat } = useApp();
   const [enabled, setEnabled] = useState(true);
 
   useEffect(() => {
@@ -20,7 +21,7 @@ export const AIAssistant: React.FC = () => {
       <div className="fixed bottom-5 right-5 z-40">
         <button
           id="ask-skillbridge-ai-floating-btn"
-          onClick={() => setIsOpen(true)}
+          onClick={() => openAiChat()}
           className="group flex items-center gap-2.5 px-4 py-3 rounded-full bg-[#181920] text-white dark:bg-[#D4F73C] dark:text-[#111216] font-extrabold text-xs sm:text-sm shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer ring-2 ring-white/20 dark:ring-black/10"
           aria-label="Ask SkillBridge AI"
         >
@@ -33,7 +34,7 @@ export const AIAssistant: React.FC = () => {
       </div>
 
       {/* Slide-in Chat Panel */}
-      <AIChatPanel isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      <AIChatPanel isOpen={isAiChatOpen} onClose={closeAiChat} />
     </>
   );
 };

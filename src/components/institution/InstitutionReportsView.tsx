@@ -32,32 +32,32 @@ export const InstitutionReportsView: React.FC = () => {
     {
       id: 'rep_1',
       title: 'Student Skill & Readiness Report',
-      standard: 'NAAC Criteria 1 & 2 • NBA Outcome Benchmark',
-      description: 'Comprehensive evaluation of student competency masteries, technical assessment scores, and program outcome attainments.',
+      standard: 'Institutional Learning Outcomes Benchmark',
+      description: 'Comprehensive evaluation of student competency masteries, technical assessment scores, and departmental outcome attainments.',
     },
     {
       id: 'rep_2',
       title: 'Campus Placement & CTC Analytics',
-      standard: 'NIRF Ranking Metric 3 (Graduation Outcomes)',
+      standard: 'Graduation & Placement Outcomes Benchmark',
       description: 'Audited record of student campus placements, median & highest CTC packages, dream offers, and top recruiters.',
     },
     {
       id: 'rep_3',
       title: 'Internship & Industrial Exposure Audit',
-      standard: 'AICTE Mandatory Internship Policy',
-      description: 'Compliance verification of experiential student internships, industry credit hours, and corporate host evaluations.',
+      standard: 'Experiential Learning Policy Benchmark',
+      description: 'Verification of experiential student internships, industry credit hours, and corporate host evaluations.',
     },
     {
       id: 'rep_4',
       title: 'Curriculum Gap & Skill Demand Matrix',
-      standard: 'Industry 4.0 Syllabus Alignment',
+      standard: 'Modern Industry Alignment Benchmark',
       description: 'Divergence analysis between industry technology requirements and university departmental curricula.',
     },
     {
       id: 'rep_5',
-      title: 'Corporate MoUs & Industry Engagement',
-      standard: 'NAAC Criteria 3.5 (Collaborations)',
-      description: 'Active institutional Memorandums of Understanding, joint laboratory grants, and corporate consultancy engagements.',
+      title: 'Corporate Partnerships & Recruiter Engagement',
+      standard: 'Industry Collaboration Benchmark',
+      description: 'Active institutional placement partnerships, joint technical workshops, and campus recruitment drives.',
     },
   ];
 
@@ -97,10 +97,10 @@ export const InstitutionReportsView: React.FC = () => {
         <div>
           <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
             <FileText className="w-5 h-5 text-blue-500" />
-            <span>Accreditation & Institutional Reports</span>
+            <span>Institutional Placement Reports</span>
           </h2>
           <p className="text-xs text-gray-400">
-            Generate audited reports for NAAC, NBA, and NIRF institutional evaluations and internal academic audits.
+            Generate audited reports and structured analytics for institutional placement evaluations and internal academic reviews.
           </p>
         </div>
 
@@ -169,7 +169,7 @@ export const InstitutionReportsView: React.FC = () => {
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-500 flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5" />
-              Accreditation Verified
+              Institutional Audit Verified
             </span>
           </div>
         </div>
@@ -185,12 +185,12 @@ export const InstitutionReportsView: React.FC = () => {
             <span className="text-base font-black text-emerald-500">{institutionPlacements.length}</span>
           </div>
           <div>
-            <span className="text-gray-400 block mb-0.5 font-semibold">Corporate MoUs Signed</span>
+            <span className="text-gray-400 block mb-0.5 font-semibold">Active Corporate Partners</span>
             <span className="text-base font-black text-purple-500">{institutionCollaborations.length}</span>
           </div>
           <div>
-            <span className="text-gray-400 block mb-0.5 font-semibold">Attainment Rating</span>
-            <span className="text-base font-black text-blue-500">94.2% (Grade A++)</span>
+            <span className="text-gray-400 block mb-0.5 font-semibold">Placement Rate</span>
+            <span className="text-base font-black text-blue-500">94.2% Verified</span>
           </div>
         </div>
 
@@ -200,9 +200,9 @@ export const InstitutionReportsView: React.FC = () => {
             <thead>
               <tr className="border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 text-gray-400 font-semibold">
                 <th className="py-2.5 px-3">Metric Identifier</th>
-                <th className="py-2.5 px-3">Accreditation Target</th>
+                <th className="py-2.5 px-3">Institutional Target</th>
                 <th className="py-2.5 px-3">Achieved Benchmark</th>
-                <th className="py-2.5 px-3">Compliance Status</th>
+                <th className="py-2.5 px-3">Review Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-white/5">
@@ -211,7 +211,7 @@ export const InstitutionReportsView: React.FC = () => {
                 <td className="py-2.5 px-3 text-gray-400">&ge; 70% Across All Branches</td>
                 <td className="py-2.5 px-3 font-bold text-emerald-500">79.4% Institutional Avg</td>
                 <td className="py-2.5 px-3">
-                  <span className="text-emerald-500 font-bold">Compliant (Exceeded)</span>
+                  <span className="text-emerald-500 font-bold">Target Achieved</span>
                 </td>
               </tr>
               <tr>
@@ -219,7 +219,7 @@ export const InstitutionReportsView: React.FC = () => {
                 <td className="py-2.5 px-3 text-gray-400">&ge; 75% of Eligible Cohort</td>
                 <td className="py-2.5 px-3 font-bold text-emerald-500">82.1% Secured Offers</td>
                 <td className="py-2.5 px-3">
-                  <span className="text-emerald-500 font-bold">Compliant</span>
+                  <span className="text-emerald-500 font-bold">Target Achieved</span>
                 </td>
               </tr>
               <tr>
@@ -231,11 +231,11 @@ export const InstitutionReportsView: React.FC = () => {
                 </td>
               </tr>
               <tr>
-                <td className="py-2.5 px-3 font-semibold">Industry Collaborative MoUs</td>
+                <td className="py-2.5 px-3 font-semibold">Active Corporate Placement Partners</td>
                 <td className="py-2.5 px-3 text-gray-400">Min. 5 Active per Department</td>
-                <td className="py-2.5 px-3 font-bold text-emerald-500">6.2 Avg MoUs per Dept</td>
+                <td className="py-2.5 px-3 font-bold text-emerald-500">6.2 Avg Partners per Dept</td>
                 <td className="py-2.5 px-3">
-                  <span className="text-emerald-500 font-bold">Compliant</span>
+                  <span className="text-emerald-500 font-bold">Target Achieved</span>
                 </td>
               </tr>
             </tbody>

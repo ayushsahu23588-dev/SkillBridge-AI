@@ -115,7 +115,7 @@ function parseJsonSafely<T>(text: string, fallback: T): T {
  * Dynamic, context-aware personalized fallback for the Career Chatbot.
  */
 export function generateCareerAdvisorFallback(
-  messages: { role: 'user' | 'assistant' | 'system'; content: string }[],
+  messages: { role: 'user' | 'assistant' | 'model' | 'system'; content: string }[],
   studentContext?: any
 ): string {
   const lastMessage = messages[messages.length - 1]?.content?.toLowerCase() || '';
@@ -481,32 +481,201 @@ Return JSON:
   }
 }
 
-export async function chatWithCareerAdvisorAI(messages: { role: 'user' | 'assistant' | 'system', content: string }[], studentContext?: any) {
+export interface ChatMessageItem {
+  role: 'user' | 'assistant' | 'model' | 'system';
+  content: string;
+}
+
+export interface MultiTurnChatOptions {
+  role?: string;
+  taskComplexity?: 'fast' | 'general' | 'complex';
+  model?: string;
+  context?: any;
+  studentContext?: any;
+}
+
+/**
+ * Multi-turn conversational chat with Gemini using @google/genai SDK.
+ * Features:
+ * - Alternating conversation history preservation
+ * - Role-tailored system instructions (Student, Recruiter, Placement Cell)
+ * - Model selection: gemini-3.1-pro-preview (complex), gemini-3.5-flash / gemini-3.8-flash (general), gemini-3.1-flash-lite (fast)
+ * - Automatic fallback and resilience
+ */
+export async function chatWithGeminiMultiTurn(
+  messages: ChatMessageItem[],
+  options: MultiTurnChatOptions = {}
+): Promise<{ text: string; modelUsed: string }> {
   const ai = getGeminiClient();
+  const role = options.role || (options.studentContext ? 'student' : 'general');
+  const taskComplexity = options.taskComplexity || 'general';
+
+  // Determine candidate models based on task complexity & request
+  let candidateModels: string[];
+  if (options.model) {
+    candidateModels = [options.model, 'gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite'];
+  } else if (taskComplexity === 'complex') {
+    candidateModels = ['gemini-3.1-pro-preview', 'gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite'];
+  } else if (taskComplexity === 'fast') {
+    candidateModels = ['gemini-3.1-flash-lite', 'gemini-3.8-flash'];
+  } else {
+    // General tasks (default)
+    candidateModels = ['gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite'];
+  }
+
+  // Build role-specific system instruction
+  let systemInstruction = '';
+  if (role === 'student') {
+    systemInstruction = `You are "SkillBridge AI Placement & Career Coach", an elite campus placement mentor and technical interview advisor for college students.
+Your core mission is to help students maximize placement readiness, land high-paying campus placements, close technical skill gaps, and excel in recruitment drives.
+Core competencies:
+- Technical preparation: Data Structures & Algorithms (DSA), System Design, Full-Stack development, Cloud architectures, and modern engineering practices.
+- Campus drive strategy: Eligibility requirements, CGPA criteria, company-specific hiring patterns (tier-1 product enterprises, service firms, high-growth startups).
+- Placement artifacts: ATS resume optimization, quantifiable project bullets (Google XYZ format: accomplished X, measured by Y, by doing Z), portfolio projects, and GitHub presence.
+- Interview mastery: Technical rounds, live coding strategy, behavioral/HR questions (STAR technique), offer evaluation, and CTC negotiation.
+Keep answers crisp, encouraging, structured with markdown bullet points, actionable next steps, and realistic timeline estimates.
+${options.studentContext ? `Candidate Profile Context: ${JSON.stringify(options.studentContext)}` : ''}
+${options.context ? `Extra Context: ${JSON.stringify(options.context)}` : ''}`;
+  } else if (role === 'company' || role === 'recruiter') {
+    systemInstruction = `You are "SkillBridge AI Talent Intelligence Copilot", an AI partner for corporate university recruiters and technical hiring managers.
+Your core mission is to help companies optimize campus hiring drives, identify high-potential student engineers, and streamline evaluation.
+Core competencies:
+- Screening rubrics: Role-specific technical assessment design (e.g. backend, frontend, AI/ML, DevOps), coding challenges, and behavioral benchmarks.
+- Campus drive orchestration: Pre-placement talks, conflict-free drive scheduling, multi-round interview pipelines, and offer rollout.
+- Candidate matching: Analyzing student skill masteries, portfolio verifications, and project credibility.
+- Market benchmarking: Competitive CTC structuring, stipend rates, and candidate acceptance rate optimization.
+Provide concise, data-driven, actionable recommendations formatted with markdown.
+${options.context ? `Recruiter / Drive Context: ${JSON.stringify(options.context)}` : ''}`;
+  } else if (role === 'college_admin' || role === 'placement_cell' || role === 'institution') {
+    systemInstruction = `You are "SkillBridge AI Placement Cell Officer Copilot", an institutional advisor for university Training & Placement Officers (TPO) and placement cell committees.
+Your core mission is to ensure 100% placement readiness across student cohorts and orchestrate seamless, conflict-free campus hiring drives.
+Core competencies:
+- Drive management: Conflict-free scheduling across visiting recruiters, campus venue allocation, eligibility filtering, and slot allocation.
+- Cohort analytics: Identifying at-risk student cohorts before hiring season, branch-wise CTC tracking, and readiness distribution.
+- Corporate partnerships: Attracting tier-1 enterprise recruiters, relationship management, and drive invitations.
+- Placement policy: One-offer rules, dream company policies, student code of conduct, and placement audit reports.
+Provide structured, professional, executive-ready advice.
+${options.context ? `Institutional Context: ${JSON.stringify(options.context)}` : ''}`;
+  } else {
+    systemInstruction = `You are "SkillBridge AI Assistant", the central AI intelligence copilot for the SkillBridge AI Campus Placement Management Platform.
+You assist students, corporate recruiters, and institutional placement cell officers in navigating campus placement drives, AI readiness scoring, skill gap analysis, explainable company matching, and recruitment workflows. Be helpful, articulate, and insightful.
+${options.context ? `Context: ${JSON.stringify(options.context)}` : ''}`;
+  }
+
   if (!ai) {
-    return generateCareerAdvisorFallback(messages, studentContext);
+    const fallback = generateCareerAdvisorFallback(messages, options.studentContext || options.context);
+    return { text: fallback, modelUsed: 'deterministic-fallback' };
   }
 
-  try {
-    const systemPrompt = `You are "EduBridge AI Advisor", a distinguished academic mentor and elite tech career coach.
-You give actionable, concise, motivating, and specific career, internship, research, and placement guidance.
-${studentContext ? `Candidate Profile Context: ${JSON.stringify(studentContext)}` : ''}
-Keep responses structured with clear highlights, actionable next steps, and realistic timeline estimates.`;
-
-    const contents = [
-      { text: systemPrompt },
-      ...messages.map(m => ({ text: `${m.role === 'user' ? 'Student' : 'Advisor'}: ${m.content}` }))
-    ];
-
-    const text = await generateContentWithResilience(ai, {
-      contents: contents.map(c => c.text).join('\n\n'),
-    });
-
-    return text || generateCareerAdvisorFallback(messages, studentContext);
-  } catch (error: any) {
-    console.warn('[Career Chatbot] Primary and fallback models temporarily unavailable, serving contextual fallback:', error?.message?.slice(0, 80));
-    return generateCareerAdvisorFallback(messages, studentContext);
+  // Separate history and the latest message
+  const cleanMessages = messages.filter((m) => m.role !== 'system');
+  if (cleanMessages.length === 0) {
+    return {
+      text: 'Hello! How can I assist with your campus placements, skill gaps, or hiring drives today?',
+      modelUsed: candidateModels[0],
+    };
   }
+
+  const lastMsg = { ...cleanMessages[cleanMessages.length - 1] };
+  const priorMessages = cleanMessages.slice(0, cleanMessages.length - 1);
+
+  // If the last message is empty, return helpful default guidance
+  if (!lastMsg.content || !lastMsg.content.trim()) {
+    return {
+      text: 'Please provide a question or topic about your campus placement, technical prep, or hiring drives.',
+      modelUsed: candidateModels[0],
+    };
+  }
+
+  // Build history array with alternating 'user' and 'model'
+  const history: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
+  for (const m of priorMessages) {
+    const gRole = m.role === 'user' ? 'user' : 'model';
+    const text = m.content || '';
+    if (!text.trim()) continue;
+
+    if (history.length > 0 && history[history.length - 1].role === gRole) {
+      history[history.length - 1].parts[0].text += `\n\n${text}`;
+    } else {
+      history.push({ role: gRole, parts: [{ text }] });
+    }
+  }
+
+  // Ensure history starts with 'user' if non-empty
+  while (history.length > 0 && history[0].role !== 'user') {
+    history.shift();
+  }
+
+  // Ensure history ends with 'model' if non-empty, so that sendMessage({ message: lastMsg.content }) creates a valid alternating turn
+  while (history.length > 0 && history[history.length - 1].role === 'user') {
+    const trailingUser = history.pop();
+    if (trailingUser?.parts?.[0]?.text) {
+      lastMsg.content = `${trailingUser.parts[0].text}\n\n${lastMsg.content}`;
+    }
+  }
+
+  let lastError: any = null;
+  const now = Date.now();
+  const sortedModels = [...candidateModels].sort((a, b) => {
+    const aCool = (modelCooldowns.get(a) || 0) > now ? 1 : 0;
+    const bCool = (modelCooldowns.get(b) || 0) > now ? 1 : 0;
+    return aCool - bCool;
+  });
+
+  for (const model of sortedModels) {
+    try {
+      const chat = ai.chats.create({
+        model,
+        history: history.length > 0 ? history : undefined,
+        config: {
+          systemInstruction,
+        },
+      });
+
+      const response = await chat.sendMessage({
+        message: lastMsg.content,
+      });
+
+      const replyText = response.text || '';
+      if (replyText) {
+        modelCooldowns.delete(model);
+        return { text: replyText, modelUsed: model };
+      }
+    } catch (err: any) {
+      lastError = err;
+      const errMsg = err?.message || String(err);
+      const isTransient =
+        errMsg.includes('503') ||
+        errMsg.includes('UNAVAILABLE') ||
+        errMsg.includes('high demand') ||
+        errMsg.includes('429') ||
+        errMsg.includes('RESOURCE_EXHAUSTED') ||
+        errMsg.includes('quota') ||
+        errMsg.includes('500');
+
+      if (isTransient) {
+        modelCooldowns.set(model, Date.now() + COOLDOWN_DURATION_MS);
+      }
+    }
+  }
+
+  console.warn(
+    '[Gemini Multi-Turn Chat] All candidate models exhausted or errored. Serving resilient fallback:',
+    lastError?.message?.slice(0, 80)
+  );
+  const fallback = generateCareerAdvisorFallback(messages, options.studentContext || options.context);
+  return { text: fallback, modelUsed: 'deterministic-fallback' };
+}
+
+export async function chatWithCareerAdvisorAI(
+  messages: { role: 'user' | 'assistant' | 'system'; content: string }[],
+  studentContext?: any
+) {
+  const result = await chatWithGeminiMultiTurn(messages, {
+    role: 'student',
+    studentContext,
+  });
+  return result.text;
 }
 
 export async function analyzeFullResumeAI(resumeText: string, fileName?: string) {

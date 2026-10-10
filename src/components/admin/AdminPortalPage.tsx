@@ -55,6 +55,7 @@ import {
 import { AdminUserModal } from './AdminUserModal';
 import { AdminOpportunityModal } from './AdminOpportunityModal';
 import { AdminApplicationModal } from './AdminApplicationModal';
+import { PerformanceMetrics } from './PerformanceMetrics';
 
 export const AdminPortalPage: React.FC = () => {
   const {
@@ -76,6 +77,7 @@ export const AdminPortalPage: React.FC = () => {
 
   // Tab routing
   const getInitialTab = () => {
+    if (currentPath.includes('/admin/metrics') || currentPath.includes('/admin/performance')) return 'metrics';
     if (currentPath.includes('/admin/users')) return 'users';
     if (currentPath.includes('/admin/opportunities')) return 'opportunities';
     if (currentPath.includes('/admin/applications')) return 'applications';
@@ -86,7 +88,7 @@ export const AdminPortalPage: React.FC = () => {
   };
 
   const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'users' | 'opportunities' | 'applications' | 'reports' | 'analytics' | 'settings'
+    'dashboard' | 'metrics' | 'users' | 'opportunities' | 'applications' | 'reports' | 'analytics' | 'settings'
   >(getInitialTab);
 
   // Synchronize activeTab whenever currentPath changes from sidebar/navigation
@@ -274,6 +276,7 @@ export const AdminPortalPage: React.FC = () => {
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-bold scrollbar-thin">
         {[
           { id: 'dashboard', label: 'Admin Dashboard', icon: <Layers className="w-3.5 h-3.5" /> },
+          { id: 'metrics', label: 'Performance Metrics', icon: <Activity className="w-3.5 h-3.5" /> },
           { id: 'users', label: 'User Management', icon: <Users className="w-3.5 h-3.5" /> },
           { id: 'opportunities', label: 'Opportunities Moderation', icon: <Briefcase className="w-3.5 h-3.5" /> },
           { id: 'applications', label: 'Application Oversight', icon: <FileCheck className="w-3.5 h-3.5" /> },
@@ -538,6 +541,17 @@ export const AdminPortalPage: React.FC = () => {
               </h3>
               <div className="space-y-2 text-xs">
                 <button
+                  onClick={() => handleTabChange('metrics')}
+                  className="w-full p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-950/60 flex items-center justify-between font-semibold transition-colors cursor-pointer border border-indigo-200/50 dark:border-indigo-800/40"
+                >
+                  <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
+                    <Activity className="w-4 h-4 text-indigo-600" />
+                    <span>Performance Metrics Dashboard</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-indigo-400" />
+                </button>
+
+                <button
                   onClick={() => handleTabChange('users')}
                   className="w-full p-3 rounded-xl bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 flex items-center justify-between font-semibold transition-colors cursor-pointer"
                 >
@@ -610,6 +624,11 @@ export const AdminPortalPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* ========================================================= */}
+      {/* PERFORMANCE METRICS TAB */}
+      {/* ========================================================= */}
+      {activeTab === 'metrics' && <PerformanceMetrics />}
 
       {/* ========================================================= */}
       {/* 9.3 USER MANAGEMENT TAB */}

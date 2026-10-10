@@ -79,7 +79,7 @@ export const InstitutionIndustriesView: React.FC = () => {
             <span>Corporate & Industry Partner Directory</span>
           </h2>
           <p className="text-xs text-gray-400">
-            Authorize recruiting companies, track corporate MoUs, and review active internship & campus job drives.
+            Authorize recruiting companies, track placement partnerships, and review active internship & campus job drives.
           </p>
         </div>
 
@@ -127,9 +127,9 @@ export const InstitutionIndustriesView: React.FC = () => {
             isDarkMode ? 'bg-[#18191E] border-white/5' : 'bg-white border-gray-200 shadow-xs'
           }`}
         >
-          <span className="text-xs text-gray-400 font-semibold block mb-1">Institutional MoUs</span>
+          <span className="text-xs text-gray-400 font-semibold block mb-1">Placement Partnerships</span>
           <div className="text-2xl font-black text-purple-500">{activeMoUs}</div>
-          <span className="text-[11px] text-gray-400">Formal Partnerships</span>
+          <span className="text-[11px] text-gray-400">Verified Recruiters</span>
         </div>
       </div>
 
@@ -251,9 +251,9 @@ export const InstitutionIndustriesView: React.FC = () => {
                     <span className="font-bold text-emerald-500">{companyOpportunities.length} Active</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-gray-400 block font-semibold">MoU Status</span>
+                    <span className="text-[10px] text-gray-400 block font-semibold">Partnership</span>
                     <span className={`font-bold ${hasMoU ? 'text-purple-400' : 'text-gray-400'}`}>
-                      {hasMoU ? 'Signed & Active' : 'Standard Partner'}
+                      {hasMoU ? 'Active Partner' : 'Standard Partner'}
                     </span>
                   </div>
                 </div>
